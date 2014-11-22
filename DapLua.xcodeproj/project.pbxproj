@@ -87,6 +87,7 @@
 		00A730091A21076700D8B84C /* lua-Bridging-Header.h in Headers */ = {isa = PBXBuildFile; fileRef = 00A72FB31A21076700D8B84C /* lua-Bridging-Header.h */; };
 		00A7300A1A21076700D8B84C /* lfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 00A72FB51A21076700D8B84C /* lfs.c */; };
 		00A7300B1A21076700D8B84C /* lfs.h in Headers */ = {isa = PBXBuildFile; fileRef = 00A72FB61A21076700D8B84C /* lfs.h */; };
+		00A730491A210C4C00D8B84C /* DapCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00A730461A210C4300D8B84C /* DapCore.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -96,6 +97,20 @@
 			proxyType = 1;
 			remoteGlobalIDString = 00A72F3D1A2106B800D8B84C;
 			remoteInfo = DapLua;
+		};
+		00A730451A210C4300D8B84C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 00A730401A210C4300D8B84C /* DapCore.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 00A72EE21A21043A00D8B84C;
+			remoteInfo = DapCore;
+		};
+		00A730471A210C4300D8B84C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 00A730401A210C4300D8B84C /* DapCore.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 00A72EED1A21043A00D8B84C;
+			remoteInfo = DapCoreTests;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -185,6 +200,7 @@
 		00A72FB31A21076700D8B84C /* lua-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "lua-Bridging-Header.h"; sourceTree = "<group>"; };
 		00A72FB51A21076700D8B84C /* lfs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lfs.c; sourceTree = "<group>"; };
 		00A72FB61A21076700D8B84C /* lfs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lfs.h; sourceTree = "<group>"; };
+		00A730401A210C4300D8B84C /* DapCore.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = DapCore.xcodeproj; path = ../dap.core.swift/DapCore.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -192,6 +208,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				00A730491A210C4C00D8B84C /* DapCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -209,6 +226,7 @@
 		00A72F341A2106B800D8B84C = {
 			isa = PBXGroup;
 			children = (
+				00A730401A210C4300D8B84C /* DapCore.xcodeproj */,
 				00A72F5A1A21076700D8B84C /* Assets */,
 				00A72F5C1A21076700D8B84C /* DapLua */,
 				00A72F681A21076700D8B84C /* iOS */,
@@ -377,6 +395,15 @@
 			path = luafilesystem;
 			sourceTree = "<group>";
 		};
+		00A730411A210C4300D8B84C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				00A730461A210C4300D8B84C /* DapCore.framework */,
+				00A730481A210C4300D8B84C /* DapCoreTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -487,6 +514,12 @@
 			mainGroup = 00A72F341A2106B800D8B84C;
 			productRefGroup = 00A72F3F1A2106B800D8B84C /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 00A730411A210C4300D8B84C /* Products */;
+					ProjectRef = 00A730401A210C4300D8B84C /* DapCore.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				00A72F3D1A2106B800D8B84C /* DapLua */,
@@ -494,6 +527,23 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		00A730461A210C4300D8B84C /* DapCore.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = DapCore.framework;
+			remoteRef = 00A730451A210C4300D8B84C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		00A730481A210C4300D8B84C /* DapCoreTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = DapCoreTests.xctest;
+			remoteRef = 00A730471A210C4300D8B84C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		00A72F3C1A2106B800D8B84C /* Resources */ = {
