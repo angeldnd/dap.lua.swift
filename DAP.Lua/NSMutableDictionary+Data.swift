@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import DapCore
 
 extension NSMutableDictionary : Data {
     //SILP: DATA_NUMBER(Bool, bool)

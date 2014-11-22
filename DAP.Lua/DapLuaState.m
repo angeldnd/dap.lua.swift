@@ -16,7 +16,7 @@
 #include "lptree.h"
 #include "lfs.h"
 
-#import "DAP/Dap-Swift.h" 
+#import "DapLua/DapLua-Swift.h"
 
 int luaopen_lpeg(lua_State *L);
 

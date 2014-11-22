@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import DapCore
 
 @objc public final class RegistryAPI {
     public class var Global: RegistryAPI {
