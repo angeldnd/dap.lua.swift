@@ -1,6 +1,6 @@
 //
 //  DapLuaState.m
-//  DAP
+//  DapLua
 //
 //  Created by YJ Park on 14/11/10.
 //  Copyright (c) 2014年 AngelDnD. All rights reserved.
