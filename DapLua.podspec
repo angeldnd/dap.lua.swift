@@ -27,12 +27,12 @@ Pod::Spec.new do |s|
   s.platform     = :ios, '8.1'
   s.requires_arc = true
 
-  s.source_files = 'DAP.Lua/*.{h,m,swift}', 'Lib/**/*.{h,c}'
+  s.source_files = 'DapLua/*.{h,m,swift}', 'Lib/**/*.{h,c}'
   s.resource_bundles = {
     #'DapCore' => ['Assets/*.png']
   }
 
-  s.public_header_files = 'DAP.Lua/*.h'
+  s.public_header_files = 'DapLua/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
   s.dependency 'DapCore', '~> 0.1.0'
 end
