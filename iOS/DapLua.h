@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "DapLuaState.h"
 
 //! Project version number for DapLua.
 FOUNDATION_EXPORT double DapLuaVersionNumber;
