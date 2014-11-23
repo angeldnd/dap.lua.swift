@@ -63,7 +63,7 @@ int luaopen_lpeg(lua_State *L);
     [self eval: @"package.loaded['lfs'] = lfs"];
     [self eval: @"package.loaded['dap'] = dap"];
     
-    setLuaPath(luaState, "lua/?.lua;lua.lib/?.lua");
+    setLuaPath(luaState, "lua/?.lua;lua.dap/?.lua;lua.lib/?.lua");
 }
 
 
