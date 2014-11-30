@@ -1,3 +1,15 @@
+# LUA_CHANNEL_BEGIN(op) #
+```objectivec
+static int dap_${op}(lua_State *L) {
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "channel_path should be string!");
+    luaL_argcheck(L, lua_istable(L, 3), 3, "data should be table!");
+
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];
+    NSString *channelPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding];
+    NSMutableDictionary *data = lua_to_data(L);
+```
+
 # LUA_PROPERTY_BEGIN(op, value_name, type, lua_type, swift_type) #
 ```objectivec
 static int dap_${op}_${type}(lua_State *L) {
@@ -65,9 +77,11 @@ static int dap_is_${type}(lua_State *L) {
 
 # LUA_PROPERTY_FUNCTIONS(type) #
 ```
-{ "add_${type}",    dap_add_${type} },
+{ "add_${type}", dap_add_${type} },
 { "remove_${type}", dap_remove_${type} },
-{ "is_${type}",     dap_is_${type} },
-{ "get_${type}",    dap_get_${type} },
-{ "set_${type}",    dap_set_${type} },
+{ "is_${type}", dap_is_${type} },
+{ "get_${type}", dap_get_${type} },
+{ "set_${type}", dap_set_${type} },
+{ "watch_${type}", dap_watch_${type} },
+{ "unwatch_${type}", dap_unwatch_${type} },
 ```

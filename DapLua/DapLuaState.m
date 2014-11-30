@@ -66,6 +66,105 @@ int luaopen_lpeg(lua_State *L);
     setLuaPath(luaState, "lua/?.lua;lua.dap/?.lua;lua.lib/?.lua");
 }
 
+static void lua_push_nsnumber(lua_State *L, NSNumber *number) {
+    const char *type = [number objCType];
+    if (strcmp(type, @encode(BOOL)) == 0) {
+        lua_pushboolean(L, [number intValue]);
+    } else if (strcmp(type, @encode(int)) == 0) {
+        lua_pushnumber(L, [number intValue]);
+    } else if (strcmp(type, @encode(float)) == 0) {
+        lua_pushnumber(L, [number floatValue]);
+    } else if (strcmp(type, @encode(double)) == 0) {
+        lua_pushnumber(L, [number doubleValue]);
+    }
+}
+
+static void lua_push_nsstring(lua_State *L, NSString *str) {
+    lua_pushstring(L, [str cStringUsingEncoding:NSUTF8StringEncoding]);
+}
+
+static void lua_push_data(lua_State *L, NSMutableDictionary *data) {
+    lua_newtable(L);
+    for (NSString *key in [data getKeys]) {
+        id value = [data valueForKey:key];
+        if ([value isKindOfClass:[NSNumber class]]) {
+            lua_pushstring(L, [key cStringUsingEncoding:NSUTF8StringEncoding]);
+            lua_push_nsnumber(L, (NSNumber *)value);
+            lua_rawset(L, -3);
+        } else if ([value isKindOfClass:[NSString class]]) {
+            lua_pushstring(L, [key cStringUsingEncoding:NSUTF8StringEncoding]);
+            lua_push_nsstring(L, (NSString *)value);
+            lua_rawset(L, -3);
+        } else if ([value isKindOfClass:[NSMutableDictionary class]]) {
+            lua_pushstring(L, [key cStringUsingEncoding:NSUTF8StringEncoding]);
+            lua_push_data(L, (NSMutableDictionary *)value);
+            lua_rawset(L, -3);
+        } else {
+            //TODO: Error message
+        }
+    }
+}
+
+static NSMutableDictionary* lua_to_data(lua_State *L) {
+    NSMutableDictionary *data = [NSMutableDictionary dictionary];
+    lua_pushnil(L);
+    while (lua_next(L, -2)) {
+        NSString *key = [NSString stringWithCString:lua_tostring(L, -2) encoding:NSUTF8StringEncoding];
+        switch (lua_type(L, -1)) {
+           case LUA_TNUMBER: {
+                lua_Number number = lua_tonumber(L, -1);
+                int intValue = (int)number;
+                float floatValue = (float)number;
+                if (intValue == floatValue) {
+                    [data setInt: key value: intValue];
+                } else {
+                    [data setFloat: key value: floatValue];
+                }
+            }
+            case LUA_TBOOLEAN: {
+                [data setBool: key value: lua_toboolean(L, -1)];
+            }
+            case LUA_TSTRING: {
+                NSString *value = [NSString stringWithCString:lua_tostring(L, -1) encoding:NSUTF8StringEncoding];
+                [data setString: key value: value];
+            }
+            case LUA_TTABLE: {
+                NSMutableDictionary *value = lua_to_data(L);
+                [data setData: key value: value];
+            }
+        }
+        lua_pop(L, 1);
+    }
+    return data;
+}
+
+//SILP: LUA_CHANNEL_BEGIN(send)
+static int dap_send(lua_State *L) {                                                                        //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "channel_path should be string!");                             //__SILP__
+    luaL_argcheck(L, lua_istable(L, 3), 3, "data should be table!");                                       //__SILP__
+                                                                                                           //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];    //__SILP__
+    NSString *channelPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+    NSMutableDictionary *data = lua_to_data(L);                                                            //__SILP__
+    bool result = [RegistryAPI.Global send: itemPath channelPath: channelPath data:data];
+    lua_pushboolean(L, result);
+    return 1;
+}
+
+//SILP: LUA_CHANNEL_BEGIN(handle)
+static int dap_handle(lua_State *L) {                                                                      //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "channel_path should be string!");                             //__SILP__
+    luaL_argcheck(L, lua_istable(L, 3), 3, "data should be table!");                                       //__SILP__
+                                                                                                           //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];    //__SILP__
+    NSString *channelPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+    NSMutableDictionary *data = lua_to_data(L);                                                            //__SILP__
+    NSMutableDictionary *result = [RegistryAPI.Global handle: itemPath handlerPath: channelPath data:data];
+    lua_push_data(L, result);
+    return 1;
+}
 
 //SILP: LUA_PROPERTY_BEGIN(add, default_value, bool, boolean, Bool)
 static int dap_add_bool(lua_State *L) {                                                                     //__SILP__
@@ -430,36 +529,46 @@ static int setLuaPath(lua_State* L, const char* path) {
 static const char *daplib_name = "dap";
 static const luaL_Reg daplib[] =
 {
+    //Channel functions
+    { "send", dap_send },
+    //{ "watch_channel", dap_send },
+    //{ "add_channel", dap_add_channel },
+    //{ "remove_channel", dap_remove_channel },
+    //Handler functions
+    { "handle", dap_handle },
+    //{ "watch_handler", dap_watch_handler },
+    //{ "add_handler", dap_add_handler },
+    //{ "remove_handler", dap_remove_handler },
     //SILP: LUA_PROPERTY_FUNCTIONS(bool)
-    { "add_bool",    dap_add_bool },                                  //__SILP__
+    { "add_bool", dap_add_bool },                                     //__SILP__
     { "remove_bool", dap_remove_bool },                               //__SILP__
-    { "is_bool",     dap_is_bool },                                   //__SILP__
-    { "get_bool",    dap_get_bool },                                  //__SILP__
-    { "set_bool",    dap_set_bool },                                  //__SILP__
+    { "is_bool", dap_is_bool },                                       //__SILP__
+    { "get_bool", dap_get_bool },                                     //__SILP__
+    { "set_bool", dap_set_bool },                                     //__SILP__
     //SILP: LUA_PROPERTY_FUNCTIONS(int)
-    { "add_int",    dap_add_int },                                    //__SILP__
+    { "add_int", dap_add_int },                                       //__SILP__
     { "remove_int", dap_remove_int },                                 //__SILP__
-    { "is_int",     dap_is_int },                                     //__SILP__
-    { "get_int",    dap_get_int },                                    //__SILP__
-    { "set_int",    dap_set_int },                                    //__SILP__
+    { "is_int", dap_is_int },                                         //__SILP__
+    { "get_int", dap_get_int },                                       //__SILP__
+    { "set_int", dap_set_int },                                       //__SILP__
     //SILP: LUA_PROPERTY_FUNCTIONS(float)
-    { "add_float",    dap_add_float },                                //__SILP__
+    { "add_float", dap_add_float },                                   //__SILP__
     { "remove_float", dap_remove_float },                             //__SILP__
-    { "is_float",     dap_is_float },                                 //__SILP__
-    { "get_float",    dap_get_float },                                //__SILP__
-    { "set_float",    dap_set_float },                                //__SILP__
+    { "is_float", dap_is_float },                                     //__SILP__
+    { "get_float", dap_get_float },                                   //__SILP__
+    { "set_float", dap_set_float },                                   //__SILP__
     //SILP: LUA_PROPERTY_FUNCTIONS(double)
-    { "add_double",    dap_add_double },                              //__SILP__
+    { "add_double", dap_add_double },                                 //__SILP__
     { "remove_double", dap_remove_double },                           //__SILP__
-    { "is_double",     dap_is_double },                               //__SILP__
-    { "get_double",    dap_get_double },                              //__SILP__
-    { "set_double",    dap_set_double },                              //__SILP__
+    { "is_double", dap_is_double },                                   //__SILP__
+    { "get_double", dap_get_double },                                 //__SILP__
+    { "set_double", dap_set_double },                                 //__SILP__
     //SILP: LUA_PROPERTY_FUNCTIONS(string)
-    { "add_string",    dap_add_string },                              //__SILP__
+    { "add_string", dap_add_string },                                 //__SILP__
     { "remove_string", dap_remove_string },                           //__SILP__
-    { "is_string",     dap_is_string },                               //__SILP__
-    { "get_string",    dap_get_string },                              //__SILP__
-    { "set_string",    dap_set_string },                              //__SILP__
+    { "is_string", dap_is_string },                                   //__SILP__
+    { "get_string", dap_get_string },                                 //__SILP__
+    { "set_string", dap_set_string },                                 //__SILP__
     { NULL, NULL }
 };
 

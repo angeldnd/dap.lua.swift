@@ -118,6 +118,14 @@ extension NSMutableDictionary : Data {
         return false
     }
     
+    public func setData(key: String, value: NSMutableDictionary) -> Bool {
+        if valueForKey(key) == nil {
+            setValue(value, forKey: key)
+            return true
+        }
+        return false
+    }
+    
     public func getKeys() -> [String] {
         var result = [String]()
         for key in allKeys {

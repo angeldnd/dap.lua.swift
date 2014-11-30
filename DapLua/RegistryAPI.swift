@@ -26,7 +26,7 @@ import DapCore
         self.init(registry: Registry.Global)
     }
 
-    public func send(itemPath: String, _ channelPath: String, _ data: Data) -> Bool {
+    public func send(itemPath: String, channelPath: String, data: NSMutableDictionary) -> Bool {
         if let item: Item = registry.get(itemPath) {
             if let result = item.send(channelPath, data) {
                 return result
@@ -35,16 +35,23 @@ import DapCore
         return false
     }
 
-    public func handle(itemPath: String, _ handlerPath: String, _ data: Data) -> Data {
+    public func handle(itemPath: String, handlerPath: String, data: NSMutableDictionary) -> NSMutableDictionary {
         if let item: Item = registry.get(itemPath) {
-            if let result = item.handle(handlerPath, data) {
+            if let result = item.handle(handlerPath, data) as? NSMutableDictionary {
                 return result
             }
         }
-        return data.newData()
+        return data.newData() as NSMutableDictionary
     }
 
     //SILP: REGISTRY_PROPERTY(Bool)
+    public func watch(itemPath: String, propertyPath: String) -> Bool {
+        if let item: Item = registry.get(itemPath) {
+            return item.isBool(propertyPath)
+        }
+        return false
+    }
+    
     public func addBool(itemPath: String, propertyPath: String, value: Bool) -> Bool {        //__SILP__
         if let item: Item = registry.get(itemPath) {                                          //__SILP__
             if let result = item.addBool(propertyPath, value) {                               //__SILP__

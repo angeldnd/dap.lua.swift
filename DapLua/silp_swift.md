@@ -62,3 +62,14 @@ public func set${type}(key: String, value: ${type}) -> Bool {
     return false
 }
 ``` 
+
+# DYNAMIC_VARS(name) #
+```
+public var {name}: Vars? {
+    var result: Vars? = get("._{name}_.");
+    if result == nil {
+        result = add("._{name}_.")
+    }
+    return result;
+}
+``` 
