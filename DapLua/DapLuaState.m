@@ -49,6 +49,91 @@ int luaopen_lpeg(lua_State *L);
     }
 }
 
+//SILP: LUA_PRORERTY_CHANGED(bool, boolean, Bool)
+- (void)onBoolChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath //__SILP__
+                lastValue: (bool)lastValue value: (bool)value {                    //__SILP__
+    lua_call_function_begin(luaState, @"_on${swift_type}Changed");                 //__SILP__
+    lua_push_nsstring(luaState, itemPath);                                         //__SILP__
+    lua_push_nsstring(luaState, propertyPath);                                     //__SILP__
+    lua_pushboolean(luaState, lastValue);                                          //__SILP__
+    lua_pushboolean(luaState, value);                                              //__SILP__
+    lua_call_function_end(luaState, 4);                                            //__SILP__
+}                                                                                  //__SILP__
+
+//SILP: LUA_PRORERTY_CHANGED(int, number, Int)
+- (void)onIntChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath //__SILP__
+                lastValue: (int)lastValue value: (int)value {                     //__SILP__
+    lua_call_function_begin(luaState, @"_on${swift_type}Changed");                //__SILP__
+    lua_push_nsstring(luaState, itemPath);                                        //__SILP__
+    lua_push_nsstring(luaState, propertyPath);                                    //__SILP__
+    lua_pushnumber(luaState, lastValue);                                          //__SILP__
+    lua_pushnumber(luaState, value);                                              //__SILP__
+    lua_call_function_end(luaState, 4);                                           //__SILP__
+}                                                                                 //__SILP__
+
+//SILP: LUA_PRORERTY_CHANGED(long long, number, Long)
+- (void)onLongChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath //__SILP__
+                lastValue: (long long)lastValue value: (long long)value {          //__SILP__
+    lua_call_function_begin(luaState, @"_on${swift_type}Changed");                 //__SILP__
+    lua_push_nsstring(luaState, itemPath);                                         //__SILP__
+    lua_push_nsstring(luaState, propertyPath);                                     //__SILP__
+    lua_pushnumber(luaState, lastValue);                                           //__SILP__
+    lua_pushnumber(luaState, value);                                               //__SILP__
+    lua_call_function_end(luaState, 4);                                            //__SILP__
+}                                                                                  //__SILP__
+
+//SILP: LUA_PRORERTY_CHANGED(float, number, Float)
+- (void)onFloatChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath //__SILP__
+                lastValue: (float)lastValue value: (float)value {                   //__SILP__
+    lua_call_function_begin(luaState, @"_on${swift_type}Changed");                  //__SILP__
+    lua_push_nsstring(luaState, itemPath);                                          //__SILP__
+    lua_push_nsstring(luaState, propertyPath);                                      //__SILP__
+    lua_pushnumber(luaState, lastValue);                                            //__SILP__
+    lua_pushnumber(luaState, value);                                                //__SILP__
+    lua_call_function_end(luaState, 4);                                             //__SILP__
+}                                                                                   //__SILP__
+
+//SILP: LUA_PRORERTY_CHANGED(double, number, Double)
+- (void)onDoubleChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath //__SILP__
+                lastValue: (double)lastValue value: (double)value {                  //__SILP__
+    lua_call_function_begin(luaState, @"_on${swift_type}Changed");                   //__SILP__
+    lua_push_nsstring(luaState, itemPath);                                           //__SILP__
+    lua_push_nsstring(luaState, propertyPath);                                       //__SILP__
+    lua_pushnumber(luaState, lastValue);                                             //__SILP__
+    lua_pushnumber(luaState, value);                                                 //__SILP__
+    lua_call_function_end(luaState, 4);                                              //__SILP__
+}                                                                                    //__SILP__
+
+//SILP: LUA_PRORERTY_CHANGED(NSString *, _nsstring, String)
+- (void)onStringChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath //__SILP__
+                lastValue: (NSString *)lastValue value: (NSString *)value {          //__SILP__
+    lua_call_function_begin(luaState, @"_on${swift_type}Changed");                   //__SILP__
+    lua_push_nsstring(luaState, itemPath);                                           //__SILP__
+    lua_push_nsstring(luaState, propertyPath);                                       //__SILP__
+    lua_push_nsstring(luaState, lastValue);                                          //__SILP__
+    lua_push_nsstring(luaState, value);                                              //__SILP__
+    lua_call_function_end(luaState, 4);                                              //__SILP__
+}                                                                                    //__SILP__
+
+- (void)onReceive: (NSString *)itemPath channelPath: (NSString *)channelPath
+             data: (Data *) data {
+    lua_call_function_begin(luaState, @"_onReceived");
+    lua_push_nsstring(luaState, itemPath);
+    lua_push_nsstring(luaState, channelPath);
+    lua_push_data(luaState, data);
+    lua_call_function_end(luaState, 3);
+}
+
+- (void)onHandle: (NSString *)itemPath handlerPath: (NSString *)handlerPath
+            data: (Data *) data {
+    lua_call_function_begin(luaState, @"_onHandle");
+    lua_push_nsstring(luaState, itemPath);
+    lua_push_nsstring(luaState, handlerPath);
+    lua_push_data(luaState, data);
+    lua_call_function_end(luaState, 3);
+}
+
+
 - (void)initialize {
     luaState = luaL_newstate();
     luaL_openlibs(luaState);
@@ -64,62 +149,103 @@ int luaopen_lpeg(lua_State *L);
     [self eval: @"package.loaded['dap'] = dap"];
     
     setLuaPath(luaState, "lua/?.lua;lua.dap/?.lua;lua.lib/?.lua");
+    [self eval: @"require 'bootstrap'"];
 }
 
-static void lua_push_nsnumber(lua_State *L, NSNumber *number) {
-    const char *type = [number objCType];
-    if (strcmp(type, @encode(BOOL)) == 0) {
-        lua_pushboolean(L, [number intValue]);
-    } else if (strcmp(type, @encode(int)) == 0) {
-        lua_pushnumber(L, [number intValue]);
-    } else if (strcmp(type, @encode(float)) == 0) {
-        lua_pushnumber(L, [number floatValue]);
-    } else if (strcmp(type, @encode(double)) == 0) {
-        lua_pushnumber(L, [number doubleValue]);
+/*
+Showing the stack when call lua code failed
+http://blog.sina.com.cn/s/blog_600ce18b0100r5sd.html
+*/
+
+static int lua_error_handler(lua_State *L) {
+    lua_getglobal(L, "debug");
+    if (!lua_istable(L, -1)) {
+        lua_pop(L, 1);
+        return 1;
     }
+    lua_getfield(L, -1, "traceback");
+    if (!lua_isfunction(L, -1)) {
+        lua_pop(L, 2);
+        return 1;
+    }
+    lua_pushvalue(L, 1);
+    lua_pushinteger(L, 2);
+    lua_call(L, 2, 1);
+    return 1;
+}
+
+static bool lua_call_function_begin(lua_State *L, NSString *func) {
+    lua_getglobal(L, [func cStringUsingEncoding:NSUTF8StringEncoding]);
+    if (!lua_isfunction(L, -1)) {
+        lua_pop(L, 1);
+        return false;
+    }
+    return true;
+}
+    
+static bool lua_call_function_end(lua_State *L, int argc) {
+    bool result = true;
+    int size0 = lua_gettop(L);
+    int error_index = lua_gettop(L) - argc;
+    lua_pushcfunction(L, lua_error_handler);
+    lua_insert(L, error_index);
+    if(lua_pcall(L, argc, 1, error_index) != 0) {
+        result = false;
+    }
+    lua_remove(L, error_index);
+    if ((lua_gettop(L) + (int)argc  + 1) != size0) {
+        //LuaScriptInterface::reportError(NULL, "Stack size changed!");
+    }
+    return result;
 }
 
 static void lua_push_nsstring(lua_State *L, NSString *str) {
     lua_pushstring(L, [str cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
-static void lua_push_data(lua_State *L, NSMutableDictionary *data) {
+static void lua_push_data(lua_State *L, Data *data) {
+    if (data == nil) {
+        lua_pushnil(L);
+        return;
+    }
+    
     lua_newtable(L);
     for (NSString *key in [data getKeys]) {
-        id value = [data valueForKey:key];
-        if ([value isKindOfClass:[NSNumber class]]) {
-            lua_pushstring(L, [key cStringUsingEncoding:NSUTF8StringEncoding]);
-            lua_push_nsnumber(L, (NSNumber *)value);
-            lua_rawset(L, -3);
-        } else if ([value isKindOfClass:[NSString class]]) {
-            lua_pushstring(L, [key cStringUsingEncoding:NSUTF8StringEncoding]);
-            lua_push_nsstring(L, (NSString *)value);
-            lua_rawset(L, -3);
-        } else if ([value isKindOfClass:[NSMutableDictionary class]]) {
-            lua_pushstring(L, [key cStringUsingEncoding:NSUTF8StringEncoding]);
-            lua_push_data(L, (NSMutableDictionary *)value);
-            lua_rawset(L, -3);
+        lua_pushstring(L, [key cStringUsingEncoding:NSUTF8StringEncoding]);
+        int type = [data getTypeAsInt:key];
+        if (type == [Data BOOL]) {
+            lua_pushboolean(L, [data getBool: key defaultValue:false]);
+        } else if (type == [Data INT]) {
+            lua_pushnumber(L, [data getInt: key defaultValue:0]);
+        } else if (type == [Data LONG]) {
+            lua_pushnumber(L, [data getLong: key defaultValue:0]);
+        } else if (type == [Data FLOAT]) {
+            lua_pushnumber(L, [data getFloat: key defaultValue:0]);
+        } else if (type == [Data DOUBLE]) {
+            lua_pushnumber(L, [data getDouble: key defaultValue:0]);
+        } else if (type == [Data STRING]) {
+            lua_push_nsstring(L, [data getString: key defaultValue:@""]);
+        } else if (type == [Data DATA]) {
+            lua_push_data(L, [data getData: key defaultValue:nil]);
+        } else if (type == [Data NUMBER]) {
+            lua_pushnumber(L, [data getDouble: key defaultValue:0]);
         } else {
+            lua_pushnil(L);
             //TODO: Error message
         }
+        lua_rawset(L, -3);
     }
 }
 
-static NSMutableDictionary* lua_to_data(lua_State *L) {
-    NSMutableDictionary *data = [NSMutableDictionary dictionary];
+static Data* lua_to_data(lua_State *L) {
+    Data *data = [Data data];
     lua_pushnil(L);
     while (lua_next(L, -2)) {
         NSString *key = [NSString stringWithCString:lua_tostring(L, -2) encoding:NSUTF8StringEncoding];
         switch (lua_type(L, -1)) {
-           case LUA_TNUMBER: {
+            case LUA_TNUMBER: {
                 lua_Number number = lua_tonumber(L, -1);
-                int intValue = (int)number;
-                float floatValue = (float)number;
-                if (intValue == floatValue) {
-                    [data setInt: key value: intValue];
-                } else {
-                    [data setFloat: key value: floatValue];
-                }
+                [data setNumber:key value:[NSNumber numberWithDouble:number]];
             }
             case LUA_TBOOLEAN: {
                 [data setBool: key value: lua_toboolean(L, -1)];
@@ -129,7 +255,7 @@ static NSMutableDictionary* lua_to_data(lua_State *L) {
                 [data setString: key value: value];
             }
             case LUA_TTABLE: {
-                NSMutableDictionary *value = lua_to_data(L);
+                Data *value = lua_to_data(L);
                 [data setData: key value: value];
             }
         }
@@ -146,7 +272,7 @@ static int dap_send(lua_State *L) {                                             
                                                                                                            //__SILP__
     NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];    //__SILP__
     NSString *channelPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
-    NSMutableDictionary *data = lua_to_data(L);                                                            //__SILP__
+    Data *data = lua_to_data(L);                                                                           //__SILP__
     bool result = [RegistryAPI.Global send: itemPath channelPath: channelPath data:data];
     lua_pushboolean(L, result);
     return 1;
@@ -160,8 +286,8 @@ static int dap_handle(lua_State *L) {                                           
                                                                                                            //__SILP__
     NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];    //__SILP__
     NSString *channelPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
-    NSMutableDictionary *data = lua_to_data(L);                                                            //__SILP__
-    NSMutableDictionary *result = [RegistryAPI.Global handle: itemPath handlerPath: channelPath data:data];
+    Data *data = lua_to_data(L);                                                                           //__SILP__
+    Data *result = [RegistryAPI.Global handle: itemPath handlerPath: channelPath data:data];
     lua_push_data(L, result);
     return 1;
 }
@@ -236,6 +362,21 @@ static int dap_set_bool(lua_State *L) {                                         
     return 1;                                                                                        //__SILP__
 }                                                                                                    //__SILP__
 
+//SILP: LUA_PROPERTY_BEGIN(watch, default_value, bool, boolean, Bool)
+static int dap_watch_bool(lua_State *L) {                                                                   //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                 //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "property_path should be string!");                             //__SILP__
+    luaL_argcheck(L, lua_isboolean(L, 3), 3, "default_value should be boolean!");                           //__SILP__
+                                                                                                            //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];     //__SILP__
+    NSString *propertyPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+    bool defaultValue = [[NSNumber numberWithBool:lua_toboolean(L, 3)] boolValue];
+//SILP: LUA_PROPERTY_WATCH_END(bool, boolean, Bool)
+    bool result = [RegistryAPI.Global watchBool: itemPath propertyPath: propertyPath defaultValue:defaultValue]; //__SILP__
+    lua_pushboolean(L, result);                                                                                  //__SILP__
+    return 1;                                                                                                    //__SILP__
+}                                                                                                                //__SILP__
+
 //SILP: LUA_PROPERTY_BEGIN(add, default_value, int, number, Int)
 static int dap_add_int(lua_State *L) {                                                                      //__SILP__
     luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                 //__SILP__
@@ -285,11 +426,11 @@ static int dap_get_int(lua_State *L) {                                          
     NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];     //__SILP__
     NSString *propertyPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
     int defaultValue = [[NSNumber numberWithInt:(int)lua_tonumber(L, 3)] intValue];
-//SILP: LUA_PROPERTY_GET_END(int, number, Int)
-    int value = [RegistryAPI.Global getInt: itemPath propertyPath: propertyPath defaultValue: defaultValue]; //__SILP__
-    lua_pushnumber(L, value);                                                                                //__SILP__
-    return 1;                                                                                                //__SILP__
-}                                                                                                            //__SILP__
+//SILP: LUA_PROPERTY_GET_END(long, number, Int)
+    long value = [RegistryAPI.Global getInt: itemPath propertyPath: propertyPath defaultValue: defaultValue]; //__SILP__
+    lua_pushnumber(L, value);                                                                                 //__SILP__
+    return 1;                                                                                                 //__SILP__
+}                                                                                                             //__SILP__
 
 //SILP: LUA_PROPERTY_BEGIN(set, new_value, int, number, Int)
 static int dap_set_int(lua_State *L) {                                                                      //__SILP__
@@ -305,6 +446,106 @@ static int dap_set_int(lua_State *L) {                                          
     lua_pushboolean(L, result);                                                                     //__SILP__
     return 1;                                                                                       //__SILP__
 }                                                                                                   //__SILP__
+
+//SILP: LUA_PROPERTY_BEGIN(watch, default_value, int, number, Int)
+static int dap_watch_int(lua_State *L) {                                                                    //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                 //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "property_path should be string!");                             //__SILP__
+    luaL_argcheck(L, lua_isnumber(L, 3), 3, "default_value should be number!");                             //__SILP__
+                                                                                                            //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];     //__SILP__
+    NSString *propertyPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+    int defaultValue = [[NSNumber numberWithInt:(int)lua_tonumber(L, 3)] intValue];
+//SILP: LUA_PROPERTY_WATCH_END(int, number, Int)
+    bool result = [RegistryAPI.Global watchInt: itemPath propertyPath: propertyPath defaultValue:defaultValue]; //__SILP__
+    lua_pushboolean(L, result);                                                                                 //__SILP__
+    return 1;                                                                                                   //__SILP__
+}                                                                                                               //__SILP__
+
+//SILP: LUA_PROPERTY_BEGIN(add, default_value, long, number, Long)
+static int dap_add_long(lua_State *L) {                                                                     //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                 //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "property_path should be string!");                             //__SILP__
+    luaL_argcheck(L, lua_isnumber(L, 3), 3, "default_value should be number!");                             //__SILP__
+                                                                                                            //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];     //__SILP__
+    NSString *propertyPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+    long long value = [[NSNumber numberWithLongLong:(long)lua_tonumber(L, 3)] longLongValue];
+//SILP: LUA_PROPERTY_ADD_END(long, number, Long)
+    bool result = [RegistryAPI.Global addLong: itemPath propertyPath: propertyPath value:value]; //__SILP__
+    lua_pushboolean(L, result);                                                                  //__SILP__
+    return 1;                                                                                    //__SILP__
+}                                                                                                //__SILP__
+
+//SILP: LUA_PROPERTY_REMOVE(long, number, Long)
+static int dap_remove_long(lua_State *L) {                                                                  //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                 //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "property_path should be string!");                             //__SILP__
+                                                                                                            //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];     //__SILP__
+    NSString *propertyPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+                                                                                                            //__SILP__
+    bool result = [RegistryAPI.Global removeLong: itemPath propertyPath: propertyPath];                     //__SILP__
+    lua_pushboolean(L, result);                                                                             //__SILP__
+    return 1;                                                                                               //__SILP__
+}                                                                                                           //__SILP__
+//SILP: LUA_PROPERTY_IS(long, number, Long)
+static int dap_is_long(lua_State *L) {                                                                      //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                 //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "property_path should be string!");                             //__SILP__
+                                                                                                            //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];     //__SILP__
+    NSString *propertyPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+                                                                                                            //__SILP__
+    bool result = [RegistryAPI.Global isLong: itemPath propertyPath: propertyPath];                         //__SILP__
+    lua_pushboolean(L, result);                                                                             //__SILP__
+    return 1;                                                                                               //__SILP__
+}                                                                                                           //__SILP__
+
+//SILP: LUA_PROPERTY_BEGIN(get, default_value, long, number, Long)
+static int dap_get_long(lua_State *L) {                                                                     //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                 //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "property_path should be string!");                             //__SILP__
+    luaL_argcheck(L, lua_isnumber(L, 3), 3, "default_value should be number!");                             //__SILP__
+                                                                                                            //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];     //__SILP__
+    NSString *propertyPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+    long long defaultValue = [[NSNumber numberWithLongLong:(long)lua_tonumber(L, 3)] longLongValue];
+//SILP: LUA_PROPERTY_GET_END(long, number, Long)
+    long value = [RegistryAPI.Global getLong: itemPath propertyPath: propertyPath defaultValue: defaultValue]; //__SILP__
+    lua_pushnumber(L, value);                                                                                  //__SILP__
+    return 1;                                                                                                  //__SILP__
+}                                                                                                              //__SILP__
+
+//SILP: LUA_PROPERTY_BEGIN(set, new_value, long, number, Long)
+static int dap_set_long(lua_State *L) {                                                                     //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                 //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "property_path should be string!");                             //__SILP__
+    luaL_argcheck(L, lua_isnumber(L, 3), 3, "new_value should be number!");                                 //__SILP__
+                                                                                                            //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];     //__SILP__
+    NSString *propertyPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+    long long newValue = [[NSNumber numberWithLongLong:(long)lua_tonumber(L, 3)] longLongValue];
+//SILP: LUA_PROPERTY_SET_END(long, number, Long)
+    bool result = [RegistryAPI.Global setLong: itemPath propertyPath: propertyPath value: newValue]; //__SILP__
+    lua_pushboolean(L, result);                                                                      //__SILP__
+    return 1;                                                                                        //__SILP__
+}                                                                                                    //__SILP__
+
+//SILP: LUA_PROPERTY_BEGIN(watch, default_value, long, number, Long)
+static int dap_watch_long(lua_State *L) {                                                                   //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                 //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "property_path should be string!");                             //__SILP__
+    luaL_argcheck(L, lua_isnumber(L, 3), 3, "default_value should be number!");                             //__SILP__
+                                                                                                            //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];     //__SILP__
+    NSString *propertyPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+    long long defaultValue = [[NSNumber numberWithLongLong:(long)lua_tonumber(L, 3)] longLongValue];
+//SILP: LUA_PROPERTY_WATCH_END(long, number, Long)
+    bool result = [RegistryAPI.Global watchLong: itemPath propertyPath: propertyPath defaultValue:defaultValue]; //__SILP__
+    lua_pushboolean(L, result);                                                                                  //__SILP__
+    return 1;                                                                                                    //__SILP__
+}                                                                                                                //__SILP__
 
 //SILP: LUA_PROPERTY_BEGIN(add, default_value, float, number, Float)
 static int dap_add_float(lua_State *L) {                                                                    //__SILP__
@@ -376,6 +617,21 @@ static int dap_set_float(lua_State *L) {                                        
     return 1;                                                                                         //__SILP__
 }                                                                                                     //__SILP__
 
+//SILP: LUA_PROPERTY_BEGIN(watch, default_value, float, number, Float)
+static int dap_watch_float(lua_State *L) {                                                                  //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                 //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "property_path should be string!");                             //__SILP__
+    luaL_argcheck(L, lua_isnumber(L, 3), 3, "default_value should be number!");                             //__SILP__
+                                                                                                            //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];     //__SILP__
+    NSString *propertyPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+    float defaultValue = [[NSNumber numberWithFloat:(float)lua_tonumber(L, 3)] floatValue];
+//SILP: LUA_PROPERTY_WATCH_END(float, number, Float)
+    bool result = [RegistryAPI.Global watchFloat: itemPath propertyPath: propertyPath defaultValue:defaultValue]; //__SILP__
+    lua_pushboolean(L, result);                                                                                   //__SILP__
+    return 1;                                                                                                     //__SILP__
+}                                                                                                                 //__SILP__
+
 //SILP: LUA_PROPERTY_BEGIN(add, default_value, double, number, Double)
 static int dap_add_double(lua_State *L) {                                                                   //__SILP__
     luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                 //__SILP__
@@ -446,6 +702,21 @@ static int dap_set_double(lua_State *L) {                                       
     return 1;                                                                                          //__SILP__
 }                                                                                                      //__SILP__
 
+//SILP: LUA_PROPERTY_BEGIN(watch, default_value, double, number, Double)
+static int dap_watch_double(lua_State *L) {                                                                 //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                 //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "property_path should be string!");                             //__SILP__
+    luaL_argcheck(L, lua_isnumber(L, 3), 3, "default_value should be number!");                             //__SILP__
+                                                                                                            //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];     //__SILP__
+    NSString *propertyPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+    double defaultValue = [[NSNumber numberWithDouble:lua_tonumber(L, 3)] doubleValue];
+//SILP: LUA_PROPERTY_WATCH_END(double, number, Double)
+    bool result = [RegistryAPI.Global watchDouble: itemPath propertyPath: propertyPath defaultValue:defaultValue]; //__SILP__
+    lua_pushboolean(L, result);                                                                                    //__SILP__
+    return 1;                                                                                                      //__SILP__
+}                                                                                                                  //__SILP__
+
 //SILP: LUA_PROPERTY_BEGIN(add, new_value, string, string, String)
 static int dap_add_string(lua_State *L) {                                                                   //__SILP__
     luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                 //__SILP__
@@ -515,6 +786,21 @@ static int dap_set_string(lua_State *L) {                                       
     return 1;                                                                                          //__SILP__
 }                                                                                                      //__SILP__
 
+//SILP: LUA_PROPERTY_BEGIN(watch, default_value, string, string, String)
+static int dap_watch_string(lua_State *L) {                                                                 //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                 //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "property_path should be string!");                             //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 3), 3, "default_value should be string!");                             //__SILP__
+                                                                                                            //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];     //__SILP__
+    NSString *propertyPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+    NSString *defaultValue = [NSString stringWithCString:lua_tostring(L, 3) encoding:NSUTF8StringEncoding];
+//SILP: LUA_PROPERTY_WATCH_END(string, string, String)
+    bool result = [RegistryAPI.Global watchString: itemPath propertyPath: propertyPath defaultValue:defaultValue]; //__SILP__
+    lua_pushboolean(L, result);                                                                                    //__SILP__
+    return 1;                                                                                                      //__SILP__
+}                                                                                                                  //__SILP__
+
 /* get from http://stackoverflow.com/questions/4125971/setting-the-global-lua-path-variable-from-c-c */
 static int setLuaPath(lua_State* L, const char* path) {
     lua_getglobal( L, "package" );
@@ -531,44 +817,54 @@ static const luaL_Reg daplib[] =
 {
     //Channel functions
     { "send", dap_send },
-    //{ "watch_channel", dap_send },
+    //{ "listen_channel", dap_listen_channel },
     //{ "add_channel", dap_add_channel },
-    //{ "remove_channel", dap_remove_channel },
     //Handler functions
     { "handle", dap_handle },
-    //{ "watch_handler", dap_watch_handler },
+    //{ "listen_handler", dap_listen_handler },
     //{ "add_handler", dap_add_handler },
-    //{ "remove_handler", dap_remove_handler },
     //SILP: LUA_PROPERTY_FUNCTIONS(bool)
     { "add_bool", dap_add_bool },                                     //__SILP__
     { "remove_bool", dap_remove_bool },                               //__SILP__
     { "is_bool", dap_is_bool },                                       //__SILP__
     { "get_bool", dap_get_bool },                                     //__SILP__
     { "set_bool", dap_set_bool },                                     //__SILP__
+    { "watch_bool", dap_watch_bool },                                 //__SILP__
     //SILP: LUA_PROPERTY_FUNCTIONS(int)
     { "add_int", dap_add_int },                                       //__SILP__
     { "remove_int", dap_remove_int },                                 //__SILP__
     { "is_int", dap_is_int },                                         //__SILP__
     { "get_int", dap_get_int },                                       //__SILP__
     { "set_int", dap_set_int },                                       //__SILP__
+    { "watch_int", dap_watch_int },                                   //__SILP__
+    //SILP: LUA_PROPERTY_FUNCTIONS(long)
+    { "add_long", dap_add_long },                                     //__SILP__
+    { "remove_long", dap_remove_long },                               //__SILP__
+    { "is_long", dap_is_long },                                       //__SILP__
+    { "get_long", dap_get_long },                                     //__SILP__
+    { "set_long", dap_set_long },                                     //__SILP__
+    { "watch_long", dap_watch_long },                                 //__SILP__
     //SILP: LUA_PROPERTY_FUNCTIONS(float)
     { "add_float", dap_add_float },                                   //__SILP__
     { "remove_float", dap_remove_float },                             //__SILP__
     { "is_float", dap_is_float },                                     //__SILP__
     { "get_float", dap_get_float },                                   //__SILP__
     { "set_float", dap_set_float },                                   //__SILP__
+    { "watch_float", dap_watch_float },                               //__SILP__
     //SILP: LUA_PROPERTY_FUNCTIONS(double)
     { "add_double", dap_add_double },                                 //__SILP__
     { "remove_double", dap_remove_double },                           //__SILP__
     { "is_double", dap_is_double },                                   //__SILP__
     { "get_double", dap_get_double },                                 //__SILP__
     { "set_double", dap_set_double },                                 //__SILP__
+    { "watch_double", dap_watch_double },                             //__SILP__
     //SILP: LUA_PROPERTY_FUNCTIONS(string)
     { "add_string", dap_add_string },                                 //__SILP__
     { "remove_string", dap_remove_string },                           //__SILP__
     { "is_string", dap_is_string },                                   //__SILP__
     { "get_string", dap_get_string },                                 //__SILP__
     { "set_string", dap_set_string },                                 //__SILP__
+    { "watch_string", dap_watch_string },                             //__SILP__
     { NULL, NULL }
 };
 

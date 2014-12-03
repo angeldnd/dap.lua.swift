@@ -7,7 +7,20 @@ static int dap_${op}(lua_State *L) {
 
     NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];
     NSString *channelPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding];
-    NSMutableDictionary *data = lua_to_data(L);
+    Data *data = lua_to_data(L);
+```
+
+# LUA_PRORERTY_CHANGED(c_type, lua_type, type) #
+```
+- (void)on${type}Changed: (NSString *)itemPath propertyPath: (NSString *)propertyPath
+                lastValue: (${c_type})lastValue value: (${c_type})value {
+    lua_call_function_begin(luaState, @"_on${type}Changed");
+    lua_push_nsstring(luaState, itemPath);
+    lua_push_nsstring(luaState, propertyPath);
+    lua_push${lua_type}(luaState, lastValue);
+    lua_push${lua_type}(luaState, value);
+    lua_call_function_end(luaState, 4);
+}
 ```
 
 # LUA_PROPERTY_BEGIN(op, value_name, type, lua_type, swift_type) #
@@ -24,6 +37,14 @@ static int dap_${op}_${type}(lua_State *L) {
 # LUA_PROPERTY_ADD_END(type, lua_type, swift_type) #
 ```objectivec
     bool result = [RegistryAPI.Global add${swift_type}: itemPath propertyPath: propertyPath value:value];
+    lua_pushboolean(L, result);
+    return 1;
+}
+```
+
+# LUA_PROPERTY_WATCH_END(type, lua_type, swift_type) #
+```objectivec
+    bool result = [RegistryAPI.Global watch${swift_type}: itemPath propertyPath: propertyPath defaultValue:defaultValue];
     lua_pushboolean(L, result);
     return 1;
 }
@@ -83,5 +104,4 @@ static int dap_is_${type}(lua_State *L) {
 { "get_${type}", dap_get_${type} },
 { "set_${type}", dap_set_${type} },
 { "watch_${type}", dap_watch_${type} },
-{ "unwatch_${type}", dap_unwatch_${type} },
 ```

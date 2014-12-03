@@ -11,7 +11,6 @@
 		00A72F511A2106B800D8B84C /* DapLuaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A72F501A2106B800D8B84C /* DapLuaTests.swift */; };
 		00A72FBC1A21076700D8B84C /* DapLuaState.h in Headers */ = {isa = PBXBuildFile; fileRef = 00A72F621A21076700D8B84C /* DapLuaState.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		00A72FBD1A21076700D8B84C /* DapLuaState.m in Sources */ = {isa = PBXBuildFile; fileRef = 00A72F631A21076700D8B84C /* DapLuaState.m */; };
-		00A72FBE1A21076700D8B84C /* NSMutableDictionary+Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A72F641A21076700D8B84C /* NSMutableDictionary+Data.swift */; };
 		00A72FBF1A21076700D8B84C /* RegistryAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A72F651A21076700D8B84C /* RegistryAPI.swift */; };
 		00A72FC21A21076700D8B84C /* DapLua.h in Headers */ = {isa = PBXBuildFile; fileRef = 00A72F691A21076700D8B84C /* DapLua.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		00A72FC31A21076700D8B84C /* HISTORY in Resources */ = {isa = PBXBuildFile; fileRef = 00A72F6C1A21076700D8B84C /* HISTORY */; };
@@ -88,6 +87,7 @@
 		00A7300A1A21076700D8B84C /* lfs.c in Sources */ = {isa = PBXBuildFile; fileRef = 00A72FB51A21076700D8B84C /* lfs.c */; };
 		00A7300B1A21076700D8B84C /* lfs.h in Headers */ = {isa = PBXBuildFile; fileRef = 00A72FB61A21076700D8B84C /* lfs.h */; };
 		00A730491A210C4C00D8B84C /* DapCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00A730461A210C4300D8B84C /* DapCore.framework */; };
+		00BDA0A31A2B1CB700DE2C91 /* ItemLuaHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00BDA0A21A2B1CB700DE2C91 /* ItemLuaHelper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -122,7 +122,6 @@
 		00A72F5B1A21076700D8B84C /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00A72F621A21076700D8B84C /* DapLuaState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DapLuaState.h; sourceTree = "<group>"; };
 		00A72F631A21076700D8B84C /* DapLuaState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DapLuaState.m; sourceTree = "<group>"; };
-		00A72F641A21076700D8B84C /* NSMutableDictionary+Data.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSMutableDictionary+Data.swift"; sourceTree = "<group>"; };
 		00A72F651A21076700D8B84C /* RegistryAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegistryAPI.swift; sourceTree = "<group>"; };
 		00A72F661A21076700D8B84C /* silp_m.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = silp_m.md; sourceTree = "<group>"; };
 		00A72F671A21076700D8B84C /* silp_swift.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = silp_swift.md; sourceTree = "<group>"; };
@@ -201,6 +200,7 @@
 		00A72FB51A21076700D8B84C /* lfs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lfs.c; sourceTree = "<group>"; };
 		00A72FB61A21076700D8B84C /* lfs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lfs.h; sourceTree = "<group>"; };
 		00A730401A210C4300D8B84C /* DapCore.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = DapCore.xcodeproj; path = ../dap.core.swift/DapCore.xcodeproj; sourceTree = "<group>"; };
+		00BDA0A21A2B1CB700DE2C91 /* ItemLuaHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ItemLuaHelper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -275,8 +275,8 @@
 			children = (
 				00A72F621A21076700D8B84C /* DapLuaState.h */,
 				00A72F631A21076700D8B84C /* DapLuaState.m */,
-				00A72F641A21076700D8B84C /* NSMutableDictionary+Data.swift */,
 				00A72F651A21076700D8B84C /* RegistryAPI.swift */,
+				00BDA0A21A2B1CB700DE2C91 /* ItemLuaHelper.swift */,
 				00A72F661A21076700D8B84C /* silp_m.md */,
 				00A72F671A21076700D8B84C /* silp_swift.md */,
 			);
@@ -587,6 +587,7 @@
 				00A72FC61A21076700D8B84C /* lpcode.c in Sources */,
 				00A72FEF1A21076700D8B84C /* lopcodes.c in Sources */,
 				00A72FD81A21076700D8B84C /* lctype.c in Sources */,
+				00BDA0A31A2B1CB700DE2C91 /* ItemLuaHelper.swift in Sources */,
 				00A7300A1A21076700D8B84C /* lfs.c in Sources */,
 				00A72FF41A21076700D8B84C /* lstate.c in Sources */,
 				00A72FE91A21076700D8B84C /* lmathlib.c in Sources */,
@@ -607,7 +608,6 @@
 				00A72FFB1A21076700D8B84C /* ltablib.c in Sources */,
 				00A72FCA1A21076700D8B84C /* lptree.c in Sources */,
 				00A72FDA1A21076700D8B84C /* ldblib.c in Sources */,
-				00A72FBE1A21076700D8B84C /* NSMutableDictionary+Data.swift in Sources */,
 				00A72FE41A21076700D8B84C /* linit.c in Sources */,
 				00A72FDD1A21076700D8B84C /* ldo.c in Sources */,
 				00A72FCD1A21076700D8B84C /* lpvm.c in Sources */,
