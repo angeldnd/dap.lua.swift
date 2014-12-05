@@ -32,6 +32,7 @@
             data: (Data *) data;
 - (void)onHandle: (NSString *)itemPath handlerPath: (NSString *)handlerPath
             data: (Data *) data;
-
+- (Data *)doHandle: (NSString *)itemPath handlerPath: (NSString *)handlerPath
+            data: (Data *) data;
 
 @end

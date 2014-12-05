@@ -33,7 +33,7 @@ import DapCore
         return false
     }
     
-    public func listen_channel(itemPath: String, channelPath: String) -> Bool {
+    public func listenChannel(itemPath: String, channelPath: String) -> Bool {
         if let item: Item = registry.get(itemPath) {
             if let listeners = item.luaChannelListeners {
                 if !listeners.has(channelPath) {
@@ -41,6 +41,13 @@ import DapCore
                     return item.channels.addChannelListener(channelPath, listener: LuaChannelListener(luaState: luaState, itemPath: itemPath));
                 }
             }
+        }
+        return false
+    }
+    
+    public func addChannel(itemPath: String, channelPath: String) -> Bool {
+        if let item: Item = registry.get(itemPath) {
+            return item.channels.addChannel(channelPath) != nil
         }
         return false
     }
@@ -54,13 +61,22 @@ import DapCore
         return Data()
     }
     
-    public func listen_handler(itemPath: String, handlerPath: String) -> Bool {
+    public func listenHandler(itemPath: String, handlerPath: String) -> Bool {
         if let item: Item = registry.get(itemPath) {
             if let listeners = item.luaHandlerListeners {
                 if !listeners.has(handlerPath) {
                     listeners.addBool(handlerPath, true)
                     return item.handlers.addHandlerListener(handlerPath, listener: LuaHandlerListener(luaState: luaState, itemPath: itemPath));
                 }
+            }
+        }
+        return false
+    }
+    
+    public func addHandler(itemPath: String, handlerPath: String) -> Bool {
+        if let item: Item = registry.get(itemPath) {
+            if let handler: LuaHandler = item.handlers.addHandler(handlerPath) {
+                return handler.setup(luaState)
             }
         }
         return false

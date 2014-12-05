@@ -37,6 +37,39 @@ public final class LuaHandlerListener : LuaChannelListener {
     }
 }
 
+public final class LuaHandler : Handler {
+    private var _luaState: DapLuaState?
+    private var _itemPath: String?
+    
+    public required init(entity: Entity, path: String) {
+        super.init(entity: entity, path: path)
+        if let handlers = entity as? Handlers {
+            if let item = handlers.entity as? Item {
+                _itemPath = item.path
+            }
+        }
+    }
+    
+    public func setup(luaState: DapLuaState) -> Bool {
+        if _luaState == nil {
+            _luaState = luaState
+            return true
+        }
+        return false
+    }
+    
+    public override func doHandle(path: String, data: Data?) -> Data? {
+        if _luaState != nil && _itemPath != nil {
+            if data != nil {
+                return _luaState!.doHandle(_itemPath!, handlerPath: path, data:data!)
+            } else {
+                return _luaState!.doHandle(_itemPath!, handlerPath: path, data:Data())
+            }
+        }
+        return nil
+    }
+}
+
 extension Item {
     //SILP: DYNAMIC_VARS(luaPropertyWatchers)
     public var luaPropertyWatchers: Vars? {                           //__SILP__
@@ -61,24 +94,6 @@ extension Item {
         var result: Vars? = get("._luaHandlerListeners_.");           //__SILP__
         if result == nil {                                            //__SILP__
             result = add("._luaHandlerListeners_.")                   //__SILP__
-        }                                                             //__SILP__
-        return result;                                                //__SILP__
-    }                                                                 //__SILP__
-    
-    //SILP: DYNAMIC_VARS(luaChannels)
-    public var luaChannels: Vars? {                                   //__SILP__
-        var result: Vars? = get("._luaChannels_.");                   //__SILP__
-        if result == nil {                                            //__SILP__
-            result = add("._luaChannels_.")                           //__SILP__
-        }                                                             //__SILP__
-        return result;                                                //__SILP__
-    }                                                                 //__SILP__
-        
-    //SILP: DYNAMIC_VARS(luaHandlers)
-    public var luaHandlers: Vars? {                                   //__SILP__
-        var result: Vars? = get("._luaHandlers_.");                   //__SILP__
-        if result == nil {                                            //__SILP__
-            result = add("._luaHandlers_.")                           //__SILP__
         }                                                             //__SILP__
         return result;                                                //__SILP__
     }                                                                 //__SILP__

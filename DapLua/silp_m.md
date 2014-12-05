@@ -1,13 +1,11 @@
-# LUA_CHANNEL_BEGIN(op) #
+# LUA_CHANNEL_BEGIN(op, kind) #
 ```objectivec
 static int dap_${op}(lua_State *L) {
     luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");
-    luaL_argcheck(L, lua_isstring(L, 2), 2, "channel_path should be string!");
-    luaL_argcheck(L, lua_istable(L, 3), 3, "data should be table!");
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "${kind}_path should be string!");
 
     NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];
-    NSString *channelPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding];
-    Data *data = lua_to_data(L);
+    NSString *${kind}Path = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding];
 ```
 
 # LUA_PRORERTY_CHANGED(c_type, lua_type, type) #
