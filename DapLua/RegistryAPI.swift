@@ -24,22 +24,10 @@ import DapCore
         self.luaState = DapLuaState.sharedState()
     }
 
-    public func send(itemPath: String, channelPath: String, data: Data) -> Bool {
+    public func fireEvent(itemPath: String, channelPath: String, evt: Data) -> Bool {
         if let item: Item = registry.get(itemPath) {
-            if let result = item.send(channelPath, data) {
+            if let result = item.fireEvent(channelPath, evt) {
                 return result
-            }
-        }
-        return false
-    }
-    
-    public func listenChannel(itemPath: String, channelPath: String) -> Bool {
-        if let item: Item = registry.get(itemPath) {
-            if let listeners = item.luaChannelListeners {
-                if !listeners.has(channelPath) {
-                    listeners.addBool(channelPath, true)
-                    return item.channels.addChannelListener(channelPath, listener: LuaChannelListener(luaState: luaState, itemPath: itemPath));
-                }
             }
         }
         return false
@@ -52,436 +40,400 @@ import DapCore
         return false
     }
 
-    public func handle(itemPath: String, handlerPath: String, data: Data) -> Data {
+    public func handleRequest(itemPath: String, handlerPath: String, req: Data) -> Data {
         if let item: Item = registry.get(itemPath) {
-            if let result = item.handle(handlerPath, data) {
+            if let result = item.handleRequest(handlerPath, req) {
                 return result
             }
         }
         return Data()
     }
     
-    public func listenHandler(itemPath: String, handlerPath: String) -> Bool {
+    public func addHandler(itemPath: String, handlerPath: String) -> Bool {
         if let item: Item = registry.get(itemPath) {
-            if let listeners = item.luaHandlerListeners {
-                if !listeners.has(handlerPath) {
-                    listeners.addBool(handlerPath, true)
-                    return item.handlers.addHandlerListener(handlerPath, listener: LuaHandlerListener(luaState: luaState, itemPath: itemPath));
-                }
+            if let handler: Handler = item.handlers.addHandler(handlerPath) {
+                return handler.setup(LuaHandler(luaState: luaState, itemPath: itemPath))
             }
         }
         return false
     }
     
-    public func addHandler(itemPath: String, handlerPath: String) -> Bool {
-        if let item: Item = registry.get(itemPath) {
-            if let handler: LuaHandler = item.handlers.addHandler(handlerPath) {
-                return handler.setup(luaState)
-            }
-        }
-        return false
-    }
+    //SILP: REGISTRY_LISTEN(Event, channelPath, channels)
+    public func listenEvent(itemPath: String, channelPath: String) -> Bool {                //__SILP__
+        if let item: Item = registry.get(itemPath) {                                        //__SILP__
+            if let listeners = item.luaEventListeners{                                      //__SILP__
+                if !listeners.has(channelPath) {                                            //__SILP__
+                    let listener = LuaEventListener(luaState: luaState, itemPath: itemPath) //__SILP__
+                    listeners.addAnyVar(channelPath, value: listener)                       //__SILP__
+                    return item.channels.addEventListener(channelPath, listener: listener); //__SILP__
+                }                                                                           //__SILP__
+            }                                                                               //__SILP__
+        }                                                                                   //__SILP__
+        return false                                                                        //__SILP__
+    }                                                                                       //__SILP__
+    
+    //SILP: REGISTRY_LISTEN(Request, handlerPath, handlers)
+    public func listenRequest(itemPath: String, handlerPath: String) -> Bool {                //__SILP__
+        if let item: Item = registry.get(itemPath) {                                          //__SILP__
+            if let listeners = item.luaRequestListeners{                                      //__SILP__
+                if !listeners.has(handlerPath) {                                              //__SILP__
+                    let listener = LuaRequestListener(luaState: luaState, itemPath: itemPath) //__SILP__
+                    listeners.addAnyVar(handlerPath, value: listener)                         //__SILP__
+                    return item.handlers.addRequestListener(handlerPath, listener: listener); //__SILP__
+                }                                                                             //__SILP__
+            }                                                                                 //__SILP__
+        }                                                                                     //__SILP__
+        return false                                                                          //__SILP__
+    }                                                                                         //__SILP__
+    
+    //SILP: REGISTRY_LISTEN(Response, handlerPath, handlers)
+    public func listenResponse(itemPath: String, handlerPath: String) -> Bool {                //__SILP__
+        if let item: Item = registry.get(itemPath) {                                           //__SILP__
+            if let listeners = item.luaResponseListeners{                                      //__SILP__
+                if !listeners.has(handlerPath) {                                               //__SILP__
+                    let listener = LuaResponseListener(luaState: luaState, itemPath: itemPath) //__SILP__
+                    listeners.addAnyVar(handlerPath, value: listener)                          //__SILP__
+                    return item.handlers.addResponseListener(handlerPath, listener: listener); //__SILP__
+                }                                                                              //__SILP__
+            }                                                                                  //__SILP__
+        }                                                                                      //__SILP__
+        return false                                                                           //__SILP__
+    }                                                                                          //__SILP__
 
     //SILP: REGISTRY_PROPERTY(Bool, Bool)
-    public func addBool(itemPath: String, propertyPath: String, value: Bool) -> Bool {                     //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let result = item.addBool(propertyPath, value) {                                            //__SILP__
-                return true                                                                                //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func removeBool(itemPath: String, propertyPath: String) -> Bool {                               //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let result = item.removeBool(propertyPath) {                                                //__SILP__
-                return true                                                                                //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func isBool(itemPath: String, propertyPath: String) -> Bool {                                   //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            return item.isBool(propertyPath)                                                               //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func getBool(itemPath: String, propertyPath: String, defaultValue: Bool) -> Bool {              //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let value: Bool = item.getBool(propertyPath) {                                              //__SILP__
-                return value                                                                               //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return defaultValue                                                                                //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func setBool(itemPath: String, propertyPath: String, value: Bool) -> Bool {                     //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let result = item.setBool(propertyPath, value) {                                            //__SILP__
-                return result                                                                              //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func watchBool(itemPath: String, propertyPath: String, defaultValue: Bool) -> Bool {            //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let watchers = item.luaPropertyWatchers {                                                   //__SILP__
-                if !watchers.has(propertyPath) {                                                           //__SILP__
-                    watchers.addBool(propertyPath, true)                                                   //__SILP__
-                    return item.properties.addWatcher(propertyPath,                                        //__SILP__
-                        {(lastValue: Bool?, value: Bool?) -> Void in                                       //__SILP__
-                            if lastValue != nil && value != nil {                                          //__SILP__
-                                self.luaState.onBoolChanged(itemPath, propertyPath: propertyPath,          //__SILP__
-                                                               lastValue: lastValue!, value: value!)       //__SILP__
-                            } else if lastValue != nil {                                                   //__SILP__
-                                self.luaState.onBoolChanged(itemPath, propertyPath: propertyPath,          //__SILP__
-                                                               lastValue: lastValue!, value: defaultValue) //__SILP__
-                            } else if value != nil {                                                       //__SILP__
-                                self.luaState.onBoolChanged(itemPath, propertyPath: propertyPath,          //__SILP__
-                                                               lastValue: defaultValue, value: value!)     //__SILP__
-                            }                                                                              //__SILP__
-                    }) != nil                                                                              //__SILP__
-                }                                                                                          //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
+    public func addBool(itemPath: String, propertyPath: String, value: Bool) -> Bool {                                    //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                      //__SILP__
+            if let result = item.addBool(propertyPath, value) {                                                           //__SILP__
+                return true                                                                                               //__SILP__
+            }                                                                                                             //__SILP__
+        }                                                                                                                 //__SILP__
+        return false                                                                                                      //__SILP__
+    }                                                                                                                     //__SILP__
+                                                                                                                          //__SILP__
+    public func removeBool(itemPath: String, propertyPath: String) -> Bool {                                              //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                      //__SILP__
+            if let result = item.removeBool(propertyPath) {                                                               //__SILP__
+                return true                                                                                               //__SILP__
+            }                                                                                                             //__SILP__
+        }                                                                                                                 //__SILP__
+        return false                                                                                                      //__SILP__
+    }                                                                                                                     //__SILP__
+                                                                                                                          //__SILP__
+    public func isBool(itemPath: String, propertyPath: String) -> Bool {                                                  //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                      //__SILP__
+            return item.isBool(propertyPath)                                                                              //__SILP__
+        }                                                                                                                 //__SILP__
+        return false                                                                                                      //__SILP__
+    }                                                                                                                     //__SILP__
+                                                                                                                          //__SILP__
+    public func getBool(itemPath: String, propertyPath: String, defaultValue: Bool) -> Bool {                             //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                      //__SILP__
+            if let value: Bool = item.getBool(propertyPath) {                                                             //__SILP__
+                return value                                                                                              //__SILP__
+            }                                                                                                             //__SILP__
+        }                                                                                                                 //__SILP__
+        return defaultValue                                                                                               //__SILP__
+    }                                                                                                                     //__SILP__
+                                                                                                                          //__SILP__
+    public func setBool(itemPath: String, propertyPath: String, value: Bool) -> Bool {                                    //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                      //__SILP__
+            if let result = item.setBool(propertyPath, value) {                                                           //__SILP__
+                return result                                                                                             //__SILP__
+            }                                                                                                             //__SILP__
+        }                                                                                                                 //__SILP__
+        return false                                                                                                      //__SILP__
+    }                                                                                                                     //__SILP__
+                                                                                                                          //__SILP__
+    public func watchBool(itemPath: String, propertyPath: String, defaultValue: Bool) -> Bool {                           //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                      //__SILP__
+            if let watchers = item.luaPropertyWatchers {                                                                  //__SILP__
+                if !watchers.has(propertyPath) {                                                                          //__SILP__
+                    let watcher = LuaBoolValueWatcher(luaState: luaState, itemPath: itemPath, defaultValue: defaultValue) //__SILP__
+                    watchers.addAnyVar(propertyPath, value: watcher)                                                      //__SILP__
+                    return item.properties.addBoolValueWatcher(propertyPath, watcher: watcher)                            //__SILP__
+                }                                                                                                         //__SILP__
+            }                                                                                                             //__SILP__
+        }                                                                                                                 //__SILP__
+        return false                                                                                                      //__SILP__
+    }                                                                                                                     //__SILP__
     //SILP: REGISTRY_PROPERTY(Int, Int32)
-    public func addInt(itemPath: String, propertyPath: String, value: Int32) -> Bool {                     //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let result = item.addInt(propertyPath, value) {                                             //__SILP__
-                return true                                                                                //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func removeInt(itemPath: String, propertyPath: String) -> Bool {                                //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let result = item.removeInt(propertyPath) {                                                 //__SILP__
-                return true                                                                                //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func isInt(itemPath: String, propertyPath: String) -> Bool {                                    //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            return item.isInt(propertyPath)                                                                //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func getInt(itemPath: String, propertyPath: String, defaultValue: Int32) -> Int32 {             //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let value: Int32 = item.getInt(propertyPath) {                                              //__SILP__
-                return value                                                                               //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return defaultValue                                                                                //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func setInt(itemPath: String, propertyPath: String, value: Int32) -> Bool {                     //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let result = item.setInt(propertyPath, value) {                                             //__SILP__
-                return result                                                                              //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func watchInt(itemPath: String, propertyPath: String, defaultValue: Int32) -> Bool {            //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let watchers = item.luaPropertyWatchers {                                                   //__SILP__
-                if !watchers.has(propertyPath) {                                                           //__SILP__
-                    watchers.addBool(propertyPath, true)                                                   //__SILP__
-                    return item.properties.addWatcher(propertyPath,                                        //__SILP__
-                        {(lastValue: Int32?, value: Int32?) -> Void in                                     //__SILP__
-                            if lastValue != nil && value != nil {                                          //__SILP__
-                                self.luaState.onIntChanged(itemPath, propertyPath: propertyPath,           //__SILP__
-                                                               lastValue: lastValue!, value: value!)       //__SILP__
-                            } else if lastValue != nil {                                                   //__SILP__
-                                self.luaState.onIntChanged(itemPath, propertyPath: propertyPath,           //__SILP__
-                                                               lastValue: lastValue!, value: defaultValue) //__SILP__
-                            } else if value != nil {                                                       //__SILP__
-                                self.luaState.onIntChanged(itemPath, propertyPath: propertyPath,           //__SILP__
-                                                               lastValue: defaultValue, value: value!)     //__SILP__
-                            }                                                                              //__SILP__
-                    }) != nil                                                                              //__SILP__
-                }                                                                                          //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
+    public func addInt(itemPath: String, propertyPath: String, value: Int32) -> Bool {                                   //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                     //__SILP__
+            if let result = item.addInt(propertyPath, value) {                                                           //__SILP__
+                return true                                                                                              //__SILP__
+            }                                                                                                            //__SILP__
+        }                                                                                                                //__SILP__
+        return false                                                                                                     //__SILP__
+    }                                                                                                                    //__SILP__
+                                                                                                                         //__SILP__
+    public func removeInt(itemPath: String, propertyPath: String) -> Bool {                                              //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                     //__SILP__
+            if let result = item.removeInt(propertyPath) {                                                               //__SILP__
+                return true                                                                                              //__SILP__
+            }                                                                                                            //__SILP__
+        }                                                                                                                //__SILP__
+        return false                                                                                                     //__SILP__
+    }                                                                                                                    //__SILP__
+                                                                                                                         //__SILP__
+    public func isInt(itemPath: String, propertyPath: String) -> Bool {                                                  //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                     //__SILP__
+            return item.isInt(propertyPath)                                                                              //__SILP__
+        }                                                                                                                //__SILP__
+        return false                                                                                                     //__SILP__
+    }                                                                                                                    //__SILP__
+                                                                                                                         //__SILP__
+    public func getInt(itemPath: String, propertyPath: String, defaultValue: Int32) -> Int32 {                           //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                     //__SILP__
+            if let value: Int32 = item.getInt(propertyPath) {                                                            //__SILP__
+                return value                                                                                             //__SILP__
+            }                                                                                                            //__SILP__
+        }                                                                                                                //__SILP__
+        return defaultValue                                                                                              //__SILP__
+    }                                                                                                                    //__SILP__
+                                                                                                                         //__SILP__
+    public func setInt(itemPath: String, propertyPath: String, value: Int32) -> Bool {                                   //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                     //__SILP__
+            if let result = item.setInt(propertyPath, value) {                                                           //__SILP__
+                return result                                                                                            //__SILP__
+            }                                                                                                            //__SILP__
+        }                                                                                                                //__SILP__
+        return false                                                                                                     //__SILP__
+    }                                                                                                                    //__SILP__
+                                                                                                                         //__SILP__
+    public func watchInt(itemPath: String, propertyPath: String, defaultValue: Int32) -> Bool {                          //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                     //__SILP__
+            if let watchers = item.luaPropertyWatchers {                                                                 //__SILP__
+                if !watchers.has(propertyPath) {                                                                         //__SILP__
+                    let watcher = LuaIntValueWatcher(luaState: luaState, itemPath: itemPath, defaultValue: defaultValue) //__SILP__
+                    watchers.addAnyVar(propertyPath, value: watcher)                                                     //__SILP__
+                    return item.properties.addIntValueWatcher(propertyPath, watcher: watcher)                            //__SILP__
+                }                                                                                                        //__SILP__
+            }                                                                                                            //__SILP__
+        }                                                                                                                //__SILP__
+        return false                                                                                                     //__SILP__
+    }                                                                                                                    //__SILP__
     //SILP: REGISTRY_PROPERTY(Long, Int64)
-    public func addLong(itemPath: String, propertyPath: String, value: Int64) -> Bool {                    //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let result = item.addLong(propertyPath, value) {                                            //__SILP__
-                return true                                                                                //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func removeLong(itemPath: String, propertyPath: String) -> Bool {                               //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let result = item.removeLong(propertyPath) {                                                //__SILP__
-                return true                                                                                //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func isLong(itemPath: String, propertyPath: String) -> Bool {                                   //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            return item.isLong(propertyPath)                                                               //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func getLong(itemPath: String, propertyPath: String, defaultValue: Int64) -> Int64 {            //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let value: Int64 = item.getLong(propertyPath) {                                             //__SILP__
-                return value                                                                               //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return defaultValue                                                                                //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func setLong(itemPath: String, propertyPath: String, value: Int64) -> Bool {                    //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let result = item.setLong(propertyPath, value) {                                            //__SILP__
-                return result                                                                              //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func watchLong(itemPath: String, propertyPath: String, defaultValue: Int64) -> Bool {           //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let watchers = item.luaPropertyWatchers {                                                   //__SILP__
-                if !watchers.has(propertyPath) {                                                           //__SILP__
-                    watchers.addBool(propertyPath, true)                                                   //__SILP__
-                    return item.properties.addWatcher(propertyPath,                                        //__SILP__
-                        {(lastValue: Int64?, value: Int64?) -> Void in                                     //__SILP__
-                            if lastValue != nil && value != nil {                                          //__SILP__
-                                self.luaState.onLongChanged(itemPath, propertyPath: propertyPath,          //__SILP__
-                                                               lastValue: lastValue!, value: value!)       //__SILP__
-                            } else if lastValue != nil {                                                   //__SILP__
-                                self.luaState.onLongChanged(itemPath, propertyPath: propertyPath,          //__SILP__
-                                                               lastValue: lastValue!, value: defaultValue) //__SILP__
-                            } else if value != nil {                                                       //__SILP__
-                                self.luaState.onLongChanged(itemPath, propertyPath: propertyPath,          //__SILP__
-                                                               lastValue: defaultValue, value: value!)     //__SILP__
-                            }                                                                              //__SILP__
-                    }) != nil                                                                              //__SILP__
-                }                                                                                          //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
+    public func addLong(itemPath: String, propertyPath: String, value: Int64) -> Bool {                                   //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                      //__SILP__
+            if let result = item.addLong(propertyPath, value) {                                                           //__SILP__
+                return true                                                                                               //__SILP__
+            }                                                                                                             //__SILP__
+        }                                                                                                                 //__SILP__
+        return false                                                                                                      //__SILP__
+    }                                                                                                                     //__SILP__
+                                                                                                                          //__SILP__
+    public func removeLong(itemPath: String, propertyPath: String) -> Bool {                                              //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                      //__SILP__
+            if let result = item.removeLong(propertyPath) {                                                               //__SILP__
+                return true                                                                                               //__SILP__
+            }                                                                                                             //__SILP__
+        }                                                                                                                 //__SILP__
+        return false                                                                                                      //__SILP__
+    }                                                                                                                     //__SILP__
+                                                                                                                          //__SILP__
+    public func isLong(itemPath: String, propertyPath: String) -> Bool {                                                  //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                      //__SILP__
+            return item.isLong(propertyPath)                                                                              //__SILP__
+        }                                                                                                                 //__SILP__
+        return false                                                                                                      //__SILP__
+    }                                                                                                                     //__SILP__
+                                                                                                                          //__SILP__
+    public func getLong(itemPath: String, propertyPath: String, defaultValue: Int64) -> Int64 {                           //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                      //__SILP__
+            if let value: Int64 = item.getLong(propertyPath) {                                                            //__SILP__
+                return value                                                                                              //__SILP__
+            }                                                                                                             //__SILP__
+        }                                                                                                                 //__SILP__
+        return defaultValue                                                                                               //__SILP__
+    }                                                                                                                     //__SILP__
+                                                                                                                          //__SILP__
+    public func setLong(itemPath: String, propertyPath: String, value: Int64) -> Bool {                                   //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                      //__SILP__
+            if let result = item.setLong(propertyPath, value) {                                                           //__SILP__
+                return result                                                                                             //__SILP__
+            }                                                                                                             //__SILP__
+        }                                                                                                                 //__SILP__
+        return false                                                                                                      //__SILP__
+    }                                                                                                                     //__SILP__
+                                                                                                                          //__SILP__
+    public func watchLong(itemPath: String, propertyPath: String, defaultValue: Int64) -> Bool {                          //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                      //__SILP__
+            if let watchers = item.luaPropertyWatchers {                                                                  //__SILP__
+                if !watchers.has(propertyPath) {                                                                          //__SILP__
+                    let watcher = LuaLongValueWatcher(luaState: luaState, itemPath: itemPath, defaultValue: defaultValue) //__SILP__
+                    watchers.addAnyVar(propertyPath, value: watcher)                                                      //__SILP__
+                    return item.properties.addLongValueWatcher(propertyPath, watcher: watcher)                            //__SILP__
+                }                                                                                                         //__SILP__
+            }                                                                                                             //__SILP__
+        }                                                                                                                 //__SILP__
+        return false                                                                                                      //__SILP__
+    }                                                                                                                     //__SILP__
     //SILP: REGISTRY_PROPERTY(Float, Float)
-    public func addFloat(itemPath: String, propertyPath: String, value: Float) -> Bool {                   //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let result = item.addFloat(propertyPath, value) {                                           //__SILP__
-                return true                                                                                //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func removeFloat(itemPath: String, propertyPath: String) -> Bool {                              //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let result = item.removeFloat(propertyPath) {                                               //__SILP__
-                return true                                                                                //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func isFloat(itemPath: String, propertyPath: String) -> Bool {                                  //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            return item.isFloat(propertyPath)                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func getFloat(itemPath: String, propertyPath: String, defaultValue: Float) -> Float {           //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let value: Float = item.getFloat(propertyPath) {                                            //__SILP__
-                return value                                                                               //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return defaultValue                                                                                //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func setFloat(itemPath: String, propertyPath: String, value: Float) -> Bool {                   //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let result = item.setFloat(propertyPath, value) {                                           //__SILP__
-                return result                                                                              //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func watchFloat(itemPath: String, propertyPath: String, defaultValue: Float) -> Bool {          //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let watchers = item.luaPropertyWatchers {                                                   //__SILP__
-                if !watchers.has(propertyPath) {                                                           //__SILP__
-                    watchers.addBool(propertyPath, true)                                                   //__SILP__
-                    return item.properties.addWatcher(propertyPath,                                        //__SILP__
-                        {(lastValue: Float?, value: Float?) -> Void in                                     //__SILP__
-                            if lastValue != nil && value != nil {                                          //__SILP__
-                                self.luaState.onFloatChanged(itemPath, propertyPath: propertyPath,         //__SILP__
-                                                               lastValue: lastValue!, value: value!)       //__SILP__
-                            } else if lastValue != nil {                                                   //__SILP__
-                                self.luaState.onFloatChanged(itemPath, propertyPath: propertyPath,         //__SILP__
-                                                               lastValue: lastValue!, value: defaultValue) //__SILP__
-                            } else if value != nil {                                                       //__SILP__
-                                self.luaState.onFloatChanged(itemPath, propertyPath: propertyPath,         //__SILP__
-                                                               lastValue: defaultValue, value: value!)     //__SILP__
-                            }                                                                              //__SILP__
-                    }) != nil                                                                              //__SILP__
-                }                                                                                          //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
+    public func addFloat(itemPath: String, propertyPath: String, value: Float) -> Bool {                                   //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                       //__SILP__
+            if let result = item.addFloat(propertyPath, value) {                                                           //__SILP__
+                return true                                                                                                //__SILP__
+            }                                                                                                              //__SILP__
+        }                                                                                                                  //__SILP__
+        return false                                                                                                       //__SILP__
+    }                                                                                                                      //__SILP__
+                                                                                                                           //__SILP__
+    public func removeFloat(itemPath: String, propertyPath: String) -> Bool {                                              //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                       //__SILP__
+            if let result = item.removeFloat(propertyPath) {                                                               //__SILP__
+                return true                                                                                                //__SILP__
+            }                                                                                                              //__SILP__
+        }                                                                                                                  //__SILP__
+        return false                                                                                                       //__SILP__
+    }                                                                                                                      //__SILP__
+                                                                                                                           //__SILP__
+    public func isFloat(itemPath: String, propertyPath: String) -> Bool {                                                  //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                       //__SILP__
+            return item.isFloat(propertyPath)                                                                              //__SILP__
+        }                                                                                                                  //__SILP__
+        return false                                                                                                       //__SILP__
+    }                                                                                                                      //__SILP__
+                                                                                                                           //__SILP__
+    public func getFloat(itemPath: String, propertyPath: String, defaultValue: Float) -> Float {                           //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                       //__SILP__
+            if let value: Float = item.getFloat(propertyPath) {                                                            //__SILP__
+                return value                                                                                               //__SILP__
+            }                                                                                                              //__SILP__
+        }                                                                                                                  //__SILP__
+        return defaultValue                                                                                                //__SILP__
+    }                                                                                                                      //__SILP__
+                                                                                                                           //__SILP__
+    public func setFloat(itemPath: String, propertyPath: String, value: Float) -> Bool {                                   //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                       //__SILP__
+            if let result = item.setFloat(propertyPath, value) {                                                           //__SILP__
+                return result                                                                                              //__SILP__
+            }                                                                                                              //__SILP__
+        }                                                                                                                  //__SILP__
+        return false                                                                                                       //__SILP__
+    }                                                                                                                      //__SILP__
+                                                                                                                           //__SILP__
+    public func watchFloat(itemPath: String, propertyPath: String, defaultValue: Float) -> Bool {                          //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                       //__SILP__
+            if let watchers = item.luaPropertyWatchers {                                                                   //__SILP__
+                if !watchers.has(propertyPath) {                                                                           //__SILP__
+                    let watcher = LuaFloatValueWatcher(luaState: luaState, itemPath: itemPath, defaultValue: defaultValue) //__SILP__
+                    watchers.addAnyVar(propertyPath, value: watcher)                                                       //__SILP__
+                    return item.properties.addFloatValueWatcher(propertyPath, watcher: watcher)                            //__SILP__
+                }                                                                                                          //__SILP__
+            }                                                                                                              //__SILP__
+        }                                                                                                                  //__SILP__
+        return false                                                                                                       //__SILP__
+    }                                                                                                                      //__SILP__
     //SILP: REGISTRY_PROPERTY(Double, Double)
-    public func addDouble(itemPath: String, propertyPath: String, value: Double) -> Bool {                 //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let result = item.addDouble(propertyPath, value) {                                          //__SILP__
-                return true                                                                                //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func removeDouble(itemPath: String, propertyPath: String) -> Bool {                             //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let result = item.removeDouble(propertyPath) {                                              //__SILP__
-                return true                                                                                //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func isDouble(itemPath: String, propertyPath: String) -> Bool {                                 //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            return item.isDouble(propertyPath)                                                             //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func getDouble(itemPath: String, propertyPath: String, defaultValue: Double) -> Double {        //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let value: Double = item.getDouble(propertyPath) {                                          //__SILP__
-                return value                                                                               //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return defaultValue                                                                                //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func setDouble(itemPath: String, propertyPath: String, value: Double) -> Bool {                 //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let result = item.setDouble(propertyPath, value) {                                          //__SILP__
-                return result                                                                              //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func watchDouble(itemPath: String, propertyPath: String, defaultValue: Double) -> Bool {        //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let watchers = item.luaPropertyWatchers {                                                   //__SILP__
-                if !watchers.has(propertyPath) {                                                           //__SILP__
-                    watchers.addBool(propertyPath, true)                                                   //__SILP__
-                    return item.properties.addWatcher(propertyPath,                                        //__SILP__
-                        {(lastValue: Double?, value: Double?) -> Void in                                   //__SILP__
-                            if lastValue != nil && value != nil {                                          //__SILP__
-                                self.luaState.onDoubleChanged(itemPath, propertyPath: propertyPath,        //__SILP__
-                                                               lastValue: lastValue!, value: value!)       //__SILP__
-                            } else if lastValue != nil {                                                   //__SILP__
-                                self.luaState.onDoubleChanged(itemPath, propertyPath: propertyPath,        //__SILP__
-                                                               lastValue: lastValue!, value: defaultValue) //__SILP__
-                            } else if value != nil {                                                       //__SILP__
-                                self.luaState.onDoubleChanged(itemPath, propertyPath: propertyPath,        //__SILP__
-                                                               lastValue: defaultValue, value: value!)     //__SILP__
-                            }                                                                              //__SILP__
-                    }) != nil                                                                              //__SILP__
-                }                                                                                          //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
+    public func addDouble(itemPath: String, propertyPath: String, value: Double) -> Bool {                                  //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                        //__SILP__
+            if let result = item.addDouble(propertyPath, value) {                                                           //__SILP__
+                return true                                                                                                 //__SILP__
+            }                                                                                                               //__SILP__
+        }                                                                                                                   //__SILP__
+        return false                                                                                                        //__SILP__
+    }                                                                                                                       //__SILP__
+                                                                                                                            //__SILP__
+    public func removeDouble(itemPath: String, propertyPath: String) -> Bool {                                              //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                        //__SILP__
+            if let result = item.removeDouble(propertyPath) {                                                               //__SILP__
+                return true                                                                                                 //__SILP__
+            }                                                                                                               //__SILP__
+        }                                                                                                                   //__SILP__
+        return false                                                                                                        //__SILP__
+    }                                                                                                                       //__SILP__
+                                                                                                                            //__SILP__
+    public func isDouble(itemPath: String, propertyPath: String) -> Bool {                                                  //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                        //__SILP__
+            return item.isDouble(propertyPath)                                                                              //__SILP__
+        }                                                                                                                   //__SILP__
+        return false                                                                                                        //__SILP__
+    }                                                                                                                       //__SILP__
+                                                                                                                            //__SILP__
+    public func getDouble(itemPath: String, propertyPath: String, defaultValue: Double) -> Double {                         //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                        //__SILP__
+            if let value: Double = item.getDouble(propertyPath) {                                                           //__SILP__
+                return value                                                                                                //__SILP__
+            }                                                                                                               //__SILP__
+        }                                                                                                                   //__SILP__
+        return defaultValue                                                                                                 //__SILP__
+    }                                                                                                                       //__SILP__
+                                                                                                                            //__SILP__
+    public func setDouble(itemPath: String, propertyPath: String, value: Double) -> Bool {                                  //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                        //__SILP__
+            if let result = item.setDouble(propertyPath, value) {                                                           //__SILP__
+                return result                                                                                               //__SILP__
+            }                                                                                                               //__SILP__
+        }                                                                                                                   //__SILP__
+        return false                                                                                                        //__SILP__
+    }                                                                                                                       //__SILP__
+                                                                                                                            //__SILP__
+    public func watchDouble(itemPath: String, propertyPath: String, defaultValue: Double) -> Bool {                         //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                        //__SILP__
+            if let watchers = item.luaPropertyWatchers {                                                                    //__SILP__
+                if !watchers.has(propertyPath) {                                                                            //__SILP__
+                    let watcher = LuaDoubleValueWatcher(luaState: luaState, itemPath: itemPath, defaultValue: defaultValue) //__SILP__
+                    watchers.addAnyVar(propertyPath, value: watcher)                                                        //__SILP__
+                    return item.properties.addDoubleValueWatcher(propertyPath, watcher: watcher)                            //__SILP__
+                }                                                                                                           //__SILP__
+            }                                                                                                               //__SILP__
+        }                                                                                                                   //__SILP__
+        return false                                                                                                        //__SILP__
+    }                                                                                                                       //__SILP__
     //SILP: REGISTRY_PROPERTY(String, String)
-    public func addString(itemPath: String, propertyPath: String, value: String) -> Bool {                 //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let result = item.addString(propertyPath, value) {                                          //__SILP__
-                return true                                                                                //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func removeString(itemPath: String, propertyPath: String) -> Bool {                             //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let result = item.removeString(propertyPath) {                                              //__SILP__
-                return true                                                                                //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func isString(itemPath: String, propertyPath: String) -> Bool {                                 //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            return item.isString(propertyPath)                                                             //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func getString(itemPath: String, propertyPath: String, defaultValue: String) -> String {        //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let value: String = item.getString(propertyPath) {                                          //__SILP__
-                return value                                                                               //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return defaultValue                                                                                //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func setString(itemPath: String, propertyPath: String, value: String) -> Bool {                 //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let result = item.setString(propertyPath, value) {                                          //__SILP__
-                return result                                                                              //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
-                                                                                                           //__SILP__
-    public func watchString(itemPath: String, propertyPath: String, defaultValue: String) -> Bool {        //__SILP__
-        if let item: Item = registry.get(itemPath) {                                                       //__SILP__
-            if let watchers = item.luaPropertyWatchers {                                                   //__SILP__
-                if !watchers.has(propertyPath) {                                                           //__SILP__
-                    watchers.addBool(propertyPath, true)                                                   //__SILP__
-                    return item.properties.addWatcher(propertyPath,                                        //__SILP__
-                        {(lastValue: String?, value: String?) -> Void in                                   //__SILP__
-                            if lastValue != nil && value != nil {                                          //__SILP__
-                                self.luaState.onStringChanged(itemPath, propertyPath: propertyPath,        //__SILP__
-                                                               lastValue: lastValue!, value: value!)       //__SILP__
-                            } else if lastValue != nil {                                                   //__SILP__
-                                self.luaState.onStringChanged(itemPath, propertyPath: propertyPath,        //__SILP__
-                                                               lastValue: lastValue!, value: defaultValue) //__SILP__
-                            } else if value != nil {                                                       //__SILP__
-                                self.luaState.onStringChanged(itemPath, propertyPath: propertyPath,        //__SILP__
-                                                               lastValue: defaultValue, value: value!)     //__SILP__
-                            }                                                                              //__SILP__
-                    }) != nil                                                                              //__SILP__
-                }                                                                                          //__SILP__
-            }                                                                                              //__SILP__
-        }                                                                                                  //__SILP__
-        return false                                                                                       //__SILP__
-    }                                                                                                      //__SILP__
+    public func addString(itemPath: String, propertyPath: String, value: String) -> Bool {                                  //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                        //__SILP__
+            if let result = item.addString(propertyPath, value) {                                                           //__SILP__
+                return true                                                                                                 //__SILP__
+            }                                                                                                               //__SILP__
+        }                                                                                                                   //__SILP__
+        return false                                                                                                        //__SILP__
+    }                                                                                                                       //__SILP__
+                                                                                                                            //__SILP__
+    public func removeString(itemPath: String, propertyPath: String) -> Bool {                                              //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                        //__SILP__
+            if let result = item.removeString(propertyPath) {                                                               //__SILP__
+                return true                                                                                                 //__SILP__
+            }                                                                                                               //__SILP__
+        }                                                                                                                   //__SILP__
+        return false                                                                                                        //__SILP__
+    }                                                                                                                       //__SILP__
+                                                                                                                            //__SILP__
+    public func isString(itemPath: String, propertyPath: String) -> Bool {                                                  //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                        //__SILP__
+            return item.isString(propertyPath)                                                                              //__SILP__
+        }                                                                                                                   //__SILP__
+        return false                                                                                                        //__SILP__
+    }                                                                                                                       //__SILP__
+                                                                                                                            //__SILP__
+    public func getString(itemPath: String, propertyPath: String, defaultValue: String) -> String {                         //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                        //__SILP__
+            if let value: String = item.getString(propertyPath) {                                                           //__SILP__
+                return value                                                                                                //__SILP__
+            }                                                                                                               //__SILP__
+        }                                                                                                                   //__SILP__
+        return defaultValue                                                                                                 //__SILP__
+    }                                                                                                                       //__SILP__
+                                                                                                                            //__SILP__
+    public func setString(itemPath: String, propertyPath: String, value: String) -> Bool {                                  //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                        //__SILP__
+            if let result = item.setString(propertyPath, value) {                                                           //__SILP__
+                return result                                                                                               //__SILP__
+            }                                                                                                               //__SILP__
+        }                                                                                                                   //__SILP__
+        return false                                                                                                        //__SILP__
+    }                                                                                                                       //__SILP__
+                                                                                                                            //__SILP__
+    public func watchString(itemPath: String, propertyPath: String, defaultValue: String) -> Bool {                         //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                        //__SILP__
+            if let watchers = item.luaPropertyWatchers {                                                                    //__SILP__
+                if !watchers.has(propertyPath) {                                                                            //__SILP__
+                    let watcher = LuaStringValueWatcher(luaState: luaState, itemPath: itemPath, defaultValue: defaultValue) //__SILP__
+                    watchers.addAnyVar(propertyPath, value: watcher)                                                        //__SILP__
+                    return item.properties.addStringValueWatcher(propertyPath, watcher: watcher)                            //__SILP__
+                }                                                                                                           //__SILP__
+            }                                                                                                               //__SILP__
+        }                                                                                                                   //__SILP__
+        return false                                                                                                        //__SILP__
+    }                                                                                                                       //__SILP__
 }

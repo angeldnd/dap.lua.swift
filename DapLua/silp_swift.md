@@ -47,25 +47,40 @@ public func watch${type}(itemPath: String, propertyPath: String, defaultValue: $
     if let item: Item = registry.get(itemPath) {
         if let watchers = item.luaPropertyWatchers {
             if !watchers.has(propertyPath) {
-                watchers.addBool(propertyPath, true)
-                return item.properties.addWatcher(propertyPath,
-                    {(lastValue: ${swift_type}?, value: ${swift_type}?) -> Void in
-                        if lastValue != nil && value != nil {
-                            self.luaState.on${type}Changed(itemPath, propertyPath: propertyPath,
-                                                           lastValue: lastValue!, value: value!)
-                        } else if lastValue != nil {
-                            self.luaState.on${type}Changed(itemPath, propertyPath: propertyPath,
-                                                           lastValue: lastValue!, value: defaultValue)
-                        } else if value != nil {
-                            self.luaState.on${type}Changed(itemPath, propertyPath: propertyPath,
-                                                           lastValue: defaultValue, value: value!)
-                        }
-                }) != nil
+                let watcher = Lua${type}ValueWatcher(luaState: luaState, itemPath: itemPath, defaultValue: defaultValue)
+                watchers.addAnyVar(propertyPath, value: watcher)
+                return item.properties.add${type}ValueWatcher(propertyPath, watcher: watcher)
             }
         }
     }
     return false
 }
+```
+
+# LUA_VALUE_WATCHER(type, swift_type) #
+```
+public final class Lua${type}ValueWatcher : LuaElement, ${type}Property.ValueWatcher {   
+    private let _defaultValue: ${swift_type}?
+
+    public init(luaState: DapLuaState, itemPath: String, defaultValue: ${swift_type}) {
+        super.init(luaState: luaState, itemPath: itemPath)
+        _defaultValue = defaultValue
+    }
+
+    public func onChanged(propertyPath: String, lastValue: ${swift_type}?, value: ${swift_type}?) -> Void {
+        if lastValue != nil && value != nil {
+            self.luaState.on${type}Changed(itemPath, propertyPath: propertyPath,
+                                           lastValue: lastValue!, value: value!)
+        } else if lastValue != nil {
+            self.luaState.on${type}Changed(itemPath, propertyPath: propertyPath,
+                                           lastValue: lastValue!, value: _defaultValue!)
+        } else if value != nil {
+            self.luaState.on${type}Changed(itemPath, propertyPath: propertyPath,
+                                           lastValue: _defaultValue!, value: value!)
+        }
+    }
+}
+
 ```
 
 # DYNAMIC_VARS(name) #
@@ -77,4 +92,21 @@ public var ${name}: Vars? {
     }
     return result;
 }
+
 ``` 
+
+# REGISTRY_LISTEN(name, var_name, aspect) #
+```
+public func listen${name}(itemPath: String, ${var_name}: String) -> Bool {
+    if let item: Item = registry.get(itemPath) {
+        if let listeners = item.lua${name}Listeners{
+            if !listeners.has(${var_name}) {
+                let listener = Lua${name}Listener(luaState: luaState, itemPath: itemPath)
+                listeners.addAnyVar(${var_name}, value: listener)
+                return item.${aspect}.add${name}Listener(${var_name}, listener: listener);
+            }
+        }
+    }
+    return false
+}
+```

@@ -9,7 +9,7 @@
 import Foundation
 import DapCore
 
-public class LuaChannelListener : ChannelListener {
+public class LuaElement {
     public let luaState: DapLuaState
     public let itemPath: String
     
@@ -17,56 +17,49 @@ public class LuaChannelListener : ChannelListener {
         self.luaState = luaState;
         self.itemPath = itemPath;
     }
+}
 
-    public func onReceive(path: String, data: Data?) -> Void {
-        if data != nil {
-            luaState.onReceive(itemPath, channelPath: path, data:data!)
+public final class LuaEventListener : LuaElement, EventListener {
+     public func onEvent(channelPath: String, evt: Data?) -> Void {
+        if evt != nil {
+            luaState.onEvent(itemPath, channelPath: channelPath, evt:evt!)
         } else {
-            luaState.onReceive(itemPath, channelPath: path, data:Data())
+            luaState.onEvent(itemPath, channelPath: channelPath, evt:Data())
         }
     }
 }
 
-public final class LuaHandlerListener : LuaChannelListener {
-    public override func onReceive(path: String, data: Data?) -> Void {
-        if data != nil {
-            luaState.onHandle(itemPath, handlerPath: path, data:data!)
+public final class LuaRequestListener : LuaElement, RequestListener {
+    public func onRequest(handlerPath: String, req: Data?) -> Void {
+        if req != nil {
+            luaState.onRequest(itemPath, handlerPath: handlerPath, req:req!)
         } else {
-            luaState.onHandle(itemPath, handlerPath: path, data:Data())
+            luaState.onRequest(itemPath, handlerPath: handlerPath, req:Data())
         }
     }
 }
 
-public final class LuaHandler : Handler {
-    private var _luaState: DapLuaState?
-    private var _itemPath: String?
-    
-    public required init(entity: Entity, path: String) {
-        super.init(entity: entity, path: path)
-        if let handlers = entity as? Handlers {
-            if let item = handlers.entity as? Item {
-                _itemPath = item.path
-            }
+public final class LuaResponseListener : LuaElement, ResponseListener {
+    public func onResponse(handlerPath: String, req: Data?, res: Data?) -> Void {
+        if req != nil && req != nil {
+            luaState.onResponse(itemPath, handlerPath: handlerPath, req:req!, res: res!)
+        } else if req != nil {
+            luaState.onResponse(itemPath, handlerPath: handlerPath, req:req!, res: Data())
+        } else if res != nil {
+            luaState.onResponse(itemPath, handlerPath: handlerPath, req:Data(), res: res!)
+        } else {
+            luaState.onResponse(itemPath, handlerPath: handlerPath, req:Data(), res: Data())
         }
     }
-    
-    public func setup(luaState: DapLuaState) -> Bool {
-        if _luaState == nil {
-            _luaState = luaState
-            return true
+}
+
+public final class LuaHandler : LuaElement, RequestHandler {   
+    public func doHandle(handlerPath: String, req: Data?) -> Data? {
+        if req != nil {
+            return luaState.doHandle(itemPath, handlerPath: handlerPath, req:req!)
+        } else {
+            return luaState.doHandle(itemPath, handlerPath: handlerPath, req:Data())
         }
-        return false
-    }
-    
-    public override func doHandle(path: String, data: Data?) -> Data? {
-        if _luaState != nil && _itemPath != nil {
-            if data != nil {
-                return _luaState!.doHandle(_itemPath!, handlerPath: path, data:data!)
-            } else {
-                return _luaState!.doHandle(_itemPath!, handlerPath: path, data:Data())
-            }
-        }
-        return nil
     }
 }
 
@@ -79,22 +72,171 @@ extension Item {
         }                                                             //__SILP__
         return result;                                                //__SILP__
     }                                                                 //__SILP__
-    
-    //SILP: DYNAMIC_VARS(luaChannelListeners)
-    public var luaChannelListeners: Vars? {                           //__SILP__
-        var result: Vars? = get("._luaChannelListeners_.");           //__SILP__
+                                                                      //__SILP__
+    //SILP: DYNAMIC_VARS(luaEventListeners)
+    public var luaEventListeners: Vars? {                             //__SILP__
+        var result: Vars? = get("._luaEventListeners_.");             //__SILP__
         if result == nil {                                            //__SILP__
-            result = add("._luaChannelListeners_.")                   //__SILP__
+            result = add("._luaEventListeners_.")                     //__SILP__
         }                                                             //__SILP__
         return result;                                                //__SILP__
     }                                                                 //__SILP__
-    
-    //SILP: DYNAMIC_VARS(luaHandlerListeners)
-    public var luaHandlerListeners: Vars? {                           //__SILP__
-        var result: Vars? = get("._luaHandlerListeners_.");           //__SILP__
+                                                                      //__SILP__
+    //SILP: DYNAMIC_VARS(luaRequestListeners)
+    public var luaRequestListeners: Vars? {                           //__SILP__
+        var result: Vars? = get("._luaRequestListeners_.");           //__SILP__
         if result == nil {                                            //__SILP__
-            result = add("._luaHandlerListeners_.")                   //__SILP__
+            result = add("._luaRequestListeners_.")                   //__SILP__
         }                                                             //__SILP__
         return result;                                                //__SILP__
     }                                                                 //__SILP__
+                                                                      //__SILP__
+    //SILP: DYNAMIC_VARS(luaResponseListeners)
+    public var luaResponseListeners: Vars? {                          //__SILP__
+        var result: Vars? = get("._luaResponseListeners_.");          //__SILP__
+        if result == nil {                                            //__SILP__
+            result = add("._luaResponseListeners_.")                  //__SILP__
+        }                                                             //__SILP__
+        return result;                                                //__SILP__
+    }                                                                 //__SILP__
+                                                                      //__SILP__
 }
+
+//SILP: LUA_VALUE_WATCHER(Bool, Bool)
+public final class LuaBoolValueWatcher : LuaElement, BoolProperty.ValueWatcher {          //__SILP__
+    private let _defaultValue: Bool?                                                      //__SILP__
+                                                                                          //__SILP__
+    public init(luaState: DapLuaState, itemPath: String, defaultValue: Bool) {            //__SILP__
+        super.init(luaState: luaState, itemPath: itemPath)                                //__SILP__
+        _defaultValue = defaultValue                                                      //__SILP__
+    }                                                                                     //__SILP__
+                                                                                          //__SILP__
+    public func onChanged(propertyPath: String, lastValue: Bool?, value: Bool?) -> Void { //__SILP__
+        if lastValue != nil && value != nil {                                             //__SILP__
+            self.luaState.onBoolChanged(itemPath, propertyPath: propertyPath,             //__SILP__
+                                           lastValue: lastValue!, value: value!)          //__SILP__
+        } else if lastValue != nil {                                                      //__SILP__
+            self.luaState.onBoolChanged(itemPath, propertyPath: propertyPath,             //__SILP__
+                                           lastValue: lastValue!, value: _defaultValue!)  //__SILP__
+        } else if value != nil {                                                          //__SILP__
+            self.luaState.onBoolChanged(itemPath, propertyPath: propertyPath,             //__SILP__
+                                           lastValue: _defaultValue!, value: value!)      //__SILP__
+        }                                                                                 //__SILP__
+    }                                                                                     //__SILP__
+}                                                                                         //__SILP__
+                                                                                          //__SILP__
+//SILP: LUA_VALUE_WATCHER(Int, Int32)
+public final class LuaIntValueWatcher : LuaElement, IntProperty.ValueWatcher {              //__SILP__
+    private let _defaultValue: Int32?                                                       //__SILP__
+                                                                                            //__SILP__
+    public init(luaState: DapLuaState, itemPath: String, defaultValue: Int32) {             //__SILP__
+        super.init(luaState: luaState, itemPath: itemPath)                                  //__SILP__
+        _defaultValue = defaultValue                                                        //__SILP__
+    }                                                                                       //__SILP__
+                                                                                            //__SILP__
+    public func onChanged(propertyPath: String, lastValue: Int32?, value: Int32?) -> Void { //__SILP__
+        if lastValue != nil && value != nil {                                               //__SILP__
+            self.luaState.onIntChanged(itemPath, propertyPath: propertyPath,                //__SILP__
+                                           lastValue: lastValue!, value: value!)            //__SILP__
+        } else if lastValue != nil {                                                        //__SILP__
+            self.luaState.onIntChanged(itemPath, propertyPath: propertyPath,                //__SILP__
+                                           lastValue: lastValue!, value: _defaultValue!)    //__SILP__
+        } else if value != nil {                                                            //__SILP__
+            self.luaState.onIntChanged(itemPath, propertyPath: propertyPath,                //__SILP__
+                                           lastValue: _defaultValue!, value: value!)        //__SILP__
+        }                                                                                   //__SILP__
+    }                                                                                       //__SILP__
+}                                                                                           //__SILP__
+                                                                                            //__SILP__
+//SILP: LUA_VALUE_WATCHER(Long, Int64)
+public final class LuaLongValueWatcher : LuaElement, LongProperty.ValueWatcher {            //__SILP__
+    private let _defaultValue: Int64?                                                       //__SILP__
+                                                                                            //__SILP__
+    public init(luaState: DapLuaState, itemPath: String, defaultValue: Int64) {             //__SILP__
+        super.init(luaState: luaState, itemPath: itemPath)                                  //__SILP__
+        _defaultValue = defaultValue                                                        //__SILP__
+    }                                                                                       //__SILP__
+                                                                                            //__SILP__
+    public func onChanged(propertyPath: String, lastValue: Int64?, value: Int64?) -> Void { //__SILP__
+        if lastValue != nil && value != nil {                                               //__SILP__
+            self.luaState.onLongChanged(itemPath, propertyPath: propertyPath,               //__SILP__
+                                           lastValue: lastValue!, value: value!)            //__SILP__
+        } else if lastValue != nil {                                                        //__SILP__
+            self.luaState.onLongChanged(itemPath, propertyPath: propertyPath,               //__SILP__
+                                           lastValue: lastValue!, value: _defaultValue!)    //__SILP__
+        } else if value != nil {                                                            //__SILP__
+            self.luaState.onLongChanged(itemPath, propertyPath: propertyPath,               //__SILP__
+                                           lastValue: _defaultValue!, value: value!)        //__SILP__
+        }                                                                                   //__SILP__
+    }                                                                                       //__SILP__
+}                                                                                           //__SILP__
+                                                                                            //__SILP__
+//SILP: LUA_VALUE_WATCHER(Float, Float)
+public final class LuaFloatValueWatcher : LuaElement, FloatProperty.ValueWatcher {          //__SILP__
+    private let _defaultValue: Float?                                                       //__SILP__
+                                                                                            //__SILP__
+    public init(luaState: DapLuaState, itemPath: String, defaultValue: Float) {             //__SILP__
+        super.init(luaState: luaState, itemPath: itemPath)                                  //__SILP__
+        _defaultValue = defaultValue                                                        //__SILP__
+    }                                                                                       //__SILP__
+                                                                                            //__SILP__
+    public func onChanged(propertyPath: String, lastValue: Float?, value: Float?) -> Void { //__SILP__
+        if lastValue != nil && value != nil {                                               //__SILP__
+            self.luaState.onFloatChanged(itemPath, propertyPath: propertyPath,              //__SILP__
+                                           lastValue: lastValue!, value: value!)            //__SILP__
+        } else if lastValue != nil {                                                        //__SILP__
+            self.luaState.onFloatChanged(itemPath, propertyPath: propertyPath,              //__SILP__
+                                           lastValue: lastValue!, value: _defaultValue!)    //__SILP__
+        } else if value != nil {                                                            //__SILP__
+            self.luaState.onFloatChanged(itemPath, propertyPath: propertyPath,              //__SILP__
+                                           lastValue: _defaultValue!, value: value!)        //__SILP__
+        }                                                                                   //__SILP__
+    }                                                                                       //__SILP__
+}                                                                                           //__SILP__
+                                                                                            //__SILP__
+//SILP: LUA_VALUE_WATCHER(Double, Double)
+public final class LuaDoubleValueWatcher : LuaElement, DoubleProperty.ValueWatcher {          //__SILP__
+    private let _defaultValue: Double?                                                        //__SILP__
+                                                                                              //__SILP__
+    public init(luaState: DapLuaState, itemPath: String, defaultValue: Double) {              //__SILP__
+        super.init(luaState: luaState, itemPath: itemPath)                                    //__SILP__
+        _defaultValue = defaultValue                                                          //__SILP__
+    }                                                                                         //__SILP__
+                                                                                              //__SILP__
+    public func onChanged(propertyPath: String, lastValue: Double?, value: Double?) -> Void { //__SILP__
+        if lastValue != nil && value != nil {                                                 //__SILP__
+            self.luaState.onDoubleChanged(itemPath, propertyPath: propertyPath,               //__SILP__
+                                           lastValue: lastValue!, value: value!)              //__SILP__
+        } else if lastValue != nil {                                                          //__SILP__
+            self.luaState.onDoubleChanged(itemPath, propertyPath: propertyPath,               //__SILP__
+                                           lastValue: lastValue!, value: _defaultValue!)      //__SILP__
+        } else if value != nil {                                                              //__SILP__
+            self.luaState.onDoubleChanged(itemPath, propertyPath: propertyPath,               //__SILP__
+                                           lastValue: _defaultValue!, value: value!)          //__SILP__
+        }                                                                                     //__SILP__
+    }                                                                                         //__SILP__
+}                                                                                             //__SILP__
+                                                                                              //__SILP__
+//SILP: LUA_VALUE_WATCHER(String, String)
+public final class LuaStringValueWatcher : LuaElement, StringProperty.ValueWatcher {          //__SILP__
+    private let _defaultValue: String?                                                        //__SILP__
+                                                                                              //__SILP__
+    public init(luaState: DapLuaState, itemPath: String, defaultValue: String) {              //__SILP__
+        super.init(luaState: luaState, itemPath: itemPath)                                    //__SILP__
+        _defaultValue = defaultValue                                                          //__SILP__
+    }                                                                                         //__SILP__
+                                                                                              //__SILP__
+    public func onChanged(propertyPath: String, lastValue: String?, value: String?) -> Void { //__SILP__
+        if lastValue != nil && value != nil {                                                 //__SILP__
+            self.luaState.onStringChanged(itemPath, propertyPath: propertyPath,               //__SILP__
+                                           lastValue: lastValue!, value: value!)              //__SILP__
+        } else if lastValue != nil {                                                          //__SILP__
+            self.luaState.onStringChanged(itemPath, propertyPath: propertyPath,               //__SILP__
+                                           lastValue: lastValue!, value: _defaultValue!)      //__SILP__
+        } else if value != nil {                                                              //__SILP__
+            self.luaState.onStringChanged(itemPath, propertyPath: propertyPath,               //__SILP__
+                                           lastValue: _defaultValue!, value: value!)          //__SILP__
+        }                                                                                     //__SILP__
+    }                                                                                         //__SILP__
+}                                                                                             //__SILP__
+                                                                                              //__SILP__

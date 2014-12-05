@@ -115,35 +115,45 @@ int luaopen_lpeg(lua_State *L);
     lua_call_function_end(luaState, 4);                                              //__SILP__
 }                                                                                    //__SILP__
 
-- (void)onReceive: (NSString *)itemPath channelPath: (NSString *)channelPath
-             data: (Data *) data {
-    lua_call_function_begin(luaState, @"_onReceived");
+- (void)onEvent: (NSString *)itemPath channelPath: (NSString *)channelPath
+            evt: (Data *) evt {
+    lua_call_function_begin(luaState, @"_onEvent");
     lua_push_nsstring(luaState, itemPath);
     lua_push_nsstring(luaState, channelPath);
-    lua_push_data(luaState, data);
+    lua_push_data(luaState, evt);
     lua_call_function_end(luaState, 3);
 }
 
-- (void)onHandle: (NSString *)itemPath handlerPath: (NSString *)handlerPath
-            data: (Data *) data {
-    lua_call_function_begin(luaState, @"_onHandle");
+- (void)onRequest: (NSString *)itemPath handlerPath: (NSString *)handlerPath
+              req: (Data *) req {
+    lua_call_function_begin(luaState, @"_onRequest");
     lua_push_nsstring(luaState, itemPath);
     lua_push_nsstring(luaState, handlerPath);
-    lua_push_data(luaState, data);
+    lua_push_data(luaState, req);
+    lua_call_function_end(luaState, 3);
+}
+
+- (void)onResponse: (NSString *)itemPath handlerPath: (NSString *)handlerPath
+               req: (Data *) req res: (Data *) res {
+    lua_call_function_begin(luaState, @"_onResponse");
+    lua_push_nsstring(luaState, itemPath);
+    lua_push_nsstring(luaState, handlerPath);
+    lua_push_data(luaState, req);
+    lua_push_data(luaState, res);
     lua_call_function_end(luaState, 3);
 }
 
 - (Data *)doHandle: (NSString *)itemPath handlerPath: (NSString *)handlerPath
-            data: (Data *) data {
+               req: (Data *) req {
     lua_call_function_begin(luaState, @"_doHandle");
     lua_push_nsstring(luaState, itemPath);
     lua_push_nsstring(luaState, handlerPath);
-    lua_push_data(luaState, data);
+    lua_push_data(luaState, req);
     lua_call_function_end(luaState, 3);
     
     luaL_argcheck(luaState, lua_istable(luaState, 1), 1, "doHandle should return a table!");
-    Data *result = lua_to_data(luaState);
-    return result;
+    Data *res = lua_to_data(luaState);
+    return res;
 }
 
 - (void)initialize {
@@ -276,8 +286,8 @@ static Data* lua_to_data(lua_State *L) {
     return data;
 }
 
-//SILP: LUA_CHANNEL_BEGIN(send, channel)
-static int dap_send(lua_State *L) {                                                                        //__SILP__
+//SILP: LUA_CHANNEL_BEGIN(fire_event, channel)
+static int dap_fire_event(lua_State *L) {                                                                  //__SILP__
     luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                //__SILP__
     luaL_argcheck(L, lua_isstring(L, 2), 2, "channel_path should be string!");                             //__SILP__
                                                                                                            //__SILP__
@@ -285,20 +295,20 @@ static int dap_send(lua_State *L) {                                             
     NSString *channelPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
     
     luaL_argcheck(L, lua_istable(L, 3), 3, "data should be table!");
-    Data *data = lua_to_data(L);
-    bool result = [RegistryAPI.Global send: itemPath channelPath: channelPath data:data];
+    Data *evt = lua_to_data(L);
+    bool result = [RegistryAPI.Global fireEvent: itemPath channelPath: channelPath evt:evt];
     lua_pushboolean(L, result);
     return 1;
 }
 
-//SILP: LUA_CHANNEL_BEGIN(listen_channel, channel)
-static int dap_listen_channel(lua_State *L) {                                                              //__SILP__
+//SILP: LUA_CHANNEL_BEGIN(listen_event, channel)
+static int dap_listen_event(lua_State *L) {                                                                //__SILP__
     luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                //__SILP__
     luaL_argcheck(L, lua_isstring(L, 2), 2, "channel_path should be string!");                             //__SILP__
                                                                                                            //__SILP__
     NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];    //__SILP__
     NSString *channelPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
-    bool result = [RegistryAPI.Global listenChannel: itemPath channelPath: channelPath];
+    bool result = [RegistryAPI.Global listenEvent: itemPath channelPath: channelPath];
     lua_pushboolean(L, result);
     return 1;
 }
@@ -315,8 +325,8 @@ static int dap_add_channel(lua_State *L) {                                      
     return 1;
 }
 
-//SILP: LUA_CHANNEL_BEGIN(handle, handler)
-static int dap_handle(lua_State *L) {                                                                      //__SILP__
+//SILP: LUA_CHANNEL_BEGIN(handle_request, handler)
+static int dap_handle_request(lua_State *L) {                                                              //__SILP__
     luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                //__SILP__
     luaL_argcheck(L, lua_isstring(L, 2), 2, "handler_path should be string!");                             //__SILP__
                                                                                                            //__SILP__
@@ -324,20 +334,32 @@ static int dap_handle(lua_State *L) {                                           
     NSString *handlerPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
     
     luaL_argcheck(L, lua_istable(L, 3), 3, "data should be table!");
-    Data *data = lua_to_data(L);
-    Data *result = [RegistryAPI.Global handle: itemPath handlerPath: handlerPath data:data];
+    Data *req = lua_to_data(L);
+    Data *result = [RegistryAPI.Global handleRequest: itemPath handlerPath: handlerPath req:req];
     lua_push_data(L, result);
     return 1;
 }
 
-//SILP: LUA_CHANNEL_BEGIN(listen_handler, handler)
-static int dap_listen_handler(lua_State *L) {                                                              //__SILP__
+//SILP: LUA_CHANNEL_BEGIN(listen_request, handler)
+static int dap_listen_request(lua_State *L) {                                                              //__SILP__
     luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                //__SILP__
     luaL_argcheck(L, lua_isstring(L, 2), 2, "handler_path should be string!");                             //__SILP__
                                                                                                            //__SILP__
     NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];    //__SILP__
     NSString *handlerPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
-    bool result = [RegistryAPI.Global listenHandler: itemPath handlerPath: handlerPath];
+    bool result = [RegistryAPI.Global listenRequest: itemPath handlerPath: handlerPath];
+    lua_pushboolean(L, result);
+    return 1;
+}
+
+//SILP: LUA_CHANNEL_BEGIN(listen_response, handler)
+static int dap_listen_response(lua_State *L) {                                                             //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "handler_path should be string!");                             //__SILP__
+                                                                                                           //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];    //__SILP__
+    NSString *handlerPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+    bool result = [RegistryAPI.Global listenResponse: itemPath handlerPath: handlerPath];
     lua_pushboolean(L, result);
     return 1;
 }
@@ -878,12 +900,13 @@ static const char *daplib_name = "dap";
 static const luaL_Reg daplib[] =
 {
     //Channel functions
-    { "send", dap_send },
-    { "listen_channel", dap_listen_channel },
+    { "fire_event", dap_fire_event },
+    { "listen_event", dap_listen_event },
     { "add_channel", dap_add_channel },
     //Handler functions
-    { "handle", dap_handle },
-    { "listen_handler", dap_listen_handler },
+    { "handle_request", dap_handle_request },
+    { "listen_request", dap_listen_request },
+    { "listen_response", dap_listen_response },
     { "add_handler", dap_add_handler },
     //SILP: LUA_PROPERTY_FUNCTIONS(bool)
     { "add_bool", dap_add_bool },                                     //__SILP__
