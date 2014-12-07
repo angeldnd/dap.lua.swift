@@ -170,7 +170,10 @@ int luaopen_lpeg(lua_State *L);
     [self eval: @"package.loaded['lfs'] = lfs"];
     [self eval: @"package.loaded['dap'] = dap"];
     
-    setLuaPath(luaState, "lua/?.lua;lua.dap/?.lua;lua.lib/?.lua");
+    NSString *bundlePath = [[NSBundle mainBundle] resourcePath];
+    NSString *luaPath = [NSString stringWithFormat:@"%@/lua/?.lua;%@/lua.dap.bundle/?.lua;%@/lua.lib.bundle/?.lua",
+                bundlePath, bundlePath, bundlePath];
+    setLuaPath(luaState, [luaPath cStringUsingEncoding:NSUTF8StringEncoding]);
     [self eval: @"require 'bootstrap'"];
 }
 
