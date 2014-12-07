@@ -15,6 +15,7 @@
 @interface DapLuaState : NSObject
 
 + (DapLuaState *)sharedState;
+- (void)bootstrap;
 - (void)eval: (NSString *)script;
 - (void)onBoolChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath
               lastValue: (bool) lastValue value: (bool)value;

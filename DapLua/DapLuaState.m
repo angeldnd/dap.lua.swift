@@ -24,22 +24,22 @@ int luaopen_lpeg(lua_State *L);
 {
     lua_State *luaState;
 }
-- (void) initialize;
+- (void) setup;
 
 @end
 
 @implementation DapLuaState
 
 + (DapLuaState *)sharedState {
-    static DapLuaState *bridge;
+    static DapLuaState *state;
 
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        bridge = [[DapLuaState alloc] init];
-        [bridge initialize];
+        state = [[DapLuaState alloc] init];
+        [state setup];
     });
 
-    return bridge;
+    return state;
 }
 
 - (void)eval:(NSString *)script {
@@ -156,7 +156,11 @@ int luaopen_lpeg(lua_State *L);
     return res;
 }
 
-- (void)initialize {
+/*
+ * Note: Since setup is called when creating sharedState, it can NOT
+ * accees RegistryAPI.Global (which reference to sharedState)
+ */
+- (void)setup {
     luaState = luaL_newstate();
     luaL_openlibs(luaState);
 
@@ -169,7 +173,9 @@ int luaopen_lpeg(lua_State *L);
     [self eval: @"package.loaded['lpeg'] = lpeg"];
     [self eval: @"package.loaded['lfs'] = lfs"];
     [self eval: @"package.loaded['dap'] = dap"];
-    
+}
+
+- (void)bootstrap {
     NSString *bundlePath = [[NSBundle mainBundle] resourcePath];
     NSString *luaPath = [NSString stringWithFormat:@"%@/lua/?.lua;%@/lua.dap.bundle/?.lua;%@/lua.lib.bundle/?.lua",
                 bundlePath, bundlePath, bundlePath];
