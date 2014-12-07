@@ -23,6 +23,50 @@ import DapCore
         self.registry = Registry.Global
         self.luaState = DapLuaState.sharedState()
     }
+    
+    public func addItem(itemPath: String, itemType: String) -> Bool {
+        return registry.addItem(itemPath, type: itemType) != nil
+    }
+    
+    public func removeItem(itemPath: String) -> Bool {
+        if let item: Item = registry.remove(itemPath) {
+            return true
+        }
+        return false
+    }
+    
+    public func dumpItem(itemPath: String) -> Data {
+        if let item: Item = registry.get(itemPath) {
+            if let result = item.dump() {
+                return result
+            }
+        }
+        return Data()
+    }
+    
+    public func loadItem(itemPath: String, data: Data) -> Bool {
+        if let item: Item = registry.get(itemPath) {
+            return item.load(data)
+        }
+        return false
+    }
+    
+    public func cloneItem(itemPath: String, toPath: String) -> Bool {
+        if let item: Item = registry.get(itemPath) {
+            if let data = item.dump() {
+                if let type = data.getString(DapObject.Consts.KeyType) {
+                    if let newItem = registry.addItem(toPath, type: type) {
+                        if newItem.load(data) {
+                            return true
+                        } else {
+                            removeItem(toPath)
+                        }
+                    }
+                }
+            }
+        }
+        return false
+    }
 
     public func fireEvent(itemPath: String, channelPath: String, evt: Data) -> Bool {
         if let item: Item = registry.get(itemPath) {

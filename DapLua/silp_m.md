@@ -1,3 +1,11 @@
+# LUA_ITEM_BEGIN(name) #
+```objectivec
+static int dap_${name}(lua_State *L) {
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");
+
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];
+```
+
 # LUA_CHANNEL_BEGIN(name, var_name) #
 ```objectivec
 static int dap_${name}(lua_State *L) {

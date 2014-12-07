@@ -301,6 +301,62 @@ static int dap_fire_event(lua_State *L) {                                       
     return 1;
 }
 
+//SILP: LUA_ITEM_BEGIN(add_item)
+static int dap_add_item(lua_State *L) {                                                                 //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                             //__SILP__
+                                                                                                        //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding]; //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "item_type should be string!");
+    NSString *itemType = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding];
+    bool result = [RegistryAPI.Global addItem: itemPath itemType: itemType];
+    lua_pushboolean(L, result);
+    return 1;
+}
+
+//SILP: LUA_ITEM_BEGIN(remove_item)
+static int dap_remove_item(lua_State *L) {                                                              //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                             //__SILP__
+                                                                                                        //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding]; //__SILP__
+    bool result = [RegistryAPI.Global removeItem: itemPath];
+    lua_pushboolean(L, result);
+    return 1;
+}
+
+//SILP: LUA_ITEM_BEGIN(dump_item)
+static int dap_dump_item(lua_State *L) {                                                                //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                             //__SILP__
+                                                                                                        //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding]; //__SILP__
+    Data *result = [RegistryAPI.Global dumpItem: itemPath];
+    lua_push_data(L, result);
+    return 1;
+}
+
+//SILP: LUA_ITEM_BEGIN(load_item)
+static int dap_load_item(lua_State *L) {                                                                //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                             //__SILP__
+                                                                                                        //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding]; //__SILP__
+    luaL_argcheck(L, lua_istable(L, 2), 2, "data should be table!");
+    Data *data = lua_to_data(L);
+    bool result = [RegistryAPI.Global loadItem: itemPath data: data];
+    lua_pushboolean(L, result);
+    return 1;
+}
+
+//SILP: LUA_ITEM_BEGIN(clone_item)
+static int dap_clone_item(lua_State *L) {                                                               //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                             //__SILP__
+                                                                                                        //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding]; //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "to_path should be string!");
+    NSString *toPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding];
+    bool result = [RegistryAPI.Global cloneItem: itemPath toPath: toPath];
+    lua_pushboolean(L, result);
+    return 1;
+}
+
 //SILP: LUA_LISTEN(event, Event, channel)
 static int dap_listen_event(lua_State *L) {                                                                //__SILP__
     luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                //__SILP__
@@ -1046,6 +1102,12 @@ static int setLuaPath(lua_State* L, const char* path) {
 static const char *daplib_name = "dap";
 static const luaL_Reg daplib[] =
 {
+    //Item functions
+    { "add_item", dap_add_item},
+    { "remove_item", dap_remove_item},
+    { "dump_item", dap_dump_item},
+    { "load_item", dap_load_item},
+    { "clone_item", dap_clone_item},
     //Channel functions
     { "fire_event", dap_fire_event },
     { "listen_event", dap_listen_event },
