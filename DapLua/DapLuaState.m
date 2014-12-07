@@ -336,6 +336,18 @@ static int dap_add_channel(lua_State *L) {                                      
     return 1;
 }
 
+//SILP: LUA_CHANNEL_BEGIN(remove_channel, channel)
+static int dap_remove_channel(lua_State *L) {                                                              //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "channel_path should be string!");                             //__SILP__
+                                                                                                           //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];    //__SILP__
+    NSString *channelPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+    bool result = [RegistryAPI.Global removeChannel: itemPath channelPath: channelPath];
+    lua_pushboolean(L, result);
+    return 1;
+}
+
 //SILP: LUA_CHANNEL_BEGIN(handle_request, handler)
 static int dap_handle_request(lua_State *L) {                                                              //__SILP__
     luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                //__SILP__
@@ -405,6 +417,18 @@ static int dap_add_handler(lua_State *L) {                                      
     NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];    //__SILP__
     NSString *handlerPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
     bool result = [RegistryAPI.Global addHandler: itemPath handlerPath: handlerPath];
+    lua_pushboolean(L, result);
+    return 1;
+}
+
+//SILP: LUA_CHANNEL_BEGIN(remove_handler, handler)
+static int dap_remove_handler(lua_State *L) {                                                              //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                //__SILP__
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "handler_path should be string!");                             //__SILP__
+                                                                                                           //__SILP__
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];    //__SILP__
+    NSString *handlerPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+    bool result = [RegistryAPI.Global removeHandler: itemPath handlerPath: handlerPath];
     lua_pushboolean(L, result);
     return 1;
 }
@@ -1027,6 +1051,7 @@ static const luaL_Reg daplib[] =
     { "listen_event", dap_listen_event },
     { "unlisten_event", dap_unlisten_event },
     { "add_channel", dap_add_channel },
+    { "remove_channel", dap_remove_channel },
     //Handler functions
     { "handle_request", dap_handle_request },
     { "listen_request", dap_listen_request },
@@ -1034,6 +1059,7 @@ static const luaL_Reg daplib[] =
     { "listen_response", dap_listen_response },
     { "unlisten_response", dap_unlisten_response },
     { "add_handler", dap_add_handler },
+    { "remove_handler", dap_remove_handler },
     //SILP: LUA_PROPERTY_FUNCTIONS(bool)
     { "add_bool", dap_add_bool },                                     //__SILP__
     { "remove_bool", dap_remove_bool },                               //__SILP__

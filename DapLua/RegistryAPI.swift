@@ -40,6 +40,15 @@ import DapCore
         return false
     }
 
+    public func removeChannel(itemPath: String, channelPath: String) -> Bool {
+        if let item: Item = registry.get(itemPath) {
+            if let channel: Channel = item.channels.remove(channelPath) {
+                return true
+            }
+        }
+        return false
+    }
+
     public func handleRequest(itemPath: String, handlerPath: String, req: Data) -> Data {
         if let item: Item = registry.get(itemPath) {
             if let result = item.handleRequest(handlerPath, req) {
@@ -53,6 +62,15 @@ import DapCore
         if let item: Item = registry.get(itemPath) {
             if let handler: Handler = item.handlers.addHandler(handlerPath) {
                 return handler.setup(LuaHandler(luaState: luaState, itemPath: itemPath))
+            }
+        }
+        return false
+    }
+    
+    public func removeHandler(itemPath: String, handlerPath: String) -> Bool {
+        if let item: Item = registry.get(itemPath) {
+            if let handler: Handler = item.channels.remove(handlerPath) {
+                return true
             }
         }
         return false
