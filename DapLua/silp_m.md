@@ -1,11 +1,36 @@
-# LUA_CHANNEL_BEGIN(op, kind) #
+# LUA_CHANNEL_BEGIN(name, var_name) #
 ```objectivec
-static int dap_${op}(lua_State *L) {
+static int dap_${name}(lua_State *L) {
     luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");
-    luaL_argcheck(L, lua_isstring(L, 2), 2, "${kind}_path should be string!");
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "${var_name}_path should be string!");
 
     NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];
-    NSString *${kind}Path = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding];
+    NSString *${var_name}Path = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding];
+```
+
+# LUA_LISTEN(name, swift_name, var_name) #
+```objectivec
+static int dap_listen_${name}(lua_State *L) {
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "${var_name}_path should be string!");
+
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];
+    NSString *${var_name}Path = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding];
+    bool result = [RegistryAPI.Global listen${swift_name}: itemPath ${var_name}Path: ${var_name}Path];
+    lua_pushboolean(L, result);
+    return 1;
+}
+
+static int dap_unlisten_${name}(lua_State *L) {
+    luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");
+    luaL_argcheck(L, lua_isstring(L, 2), 2, "${var_name}_path should be string!");
+
+    NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];
+    NSString *${var_name}Path = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding];
+    bool result = [RegistryAPI.Global unlisten${swift_name}: itemPath ${var_name}Path: ${var_name}Path];
+    lua_pushboolean(L, result);
+    return 1;
+}
 ```
 
 # LUA_PRORERTY_CHANGED(c_type, lua_type, type) #
@@ -43,6 +68,14 @@ static int dap_${op}_${type}(lua_State *L) {
 # LUA_PROPERTY_WATCH_END(type, lua_type, swift_type) #
 ```objectivec
     bool result = [RegistryAPI.Global watch${swift_type}: itemPath propertyPath: propertyPath defaultValue:defaultValue];
+    lua_pushboolean(L, result);
+    return 1;
+}
+```
+
+# LUA_PROPERTY_UNWATCH_END(type, lua_type, swift_type) #
+```objectivec
+    bool result = [RegistryAPI.Global unwatch${swift_type}: itemPath propertyPath: propertyPath defaultValue:defaultValue];
     lua_pushboolean(L, result);
     return 1;
 }
@@ -102,4 +135,5 @@ static int dap_is_${type}(lua_State *L) {
 { "get_${type}", dap_get_${type} },
 { "set_${type}", dap_set_${type} },
 { "watch_${type}", dap_watch_${type} },
+{ "unwatch_${type}", dap_unwatch_${type} },
 ```

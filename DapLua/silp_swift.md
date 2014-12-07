@@ -55,6 +55,19 @@ public func watch${type}(itemPath: String, propertyPath: String, defaultValue: $
     }
     return false
 }
+
+public func unwatch${type}(itemPath: String, propertyPath: String, defaultValue: ${swift_type}) -> Bool {
+    if let item: Item = registry.get(itemPath) {
+        if let watchers = item.luaPropertyWatchers {
+            if let watcherVar: AnyVar<Lua${type}ValueWatcher> = watchers.remove(propertyPath) {
+                if let watcher = watcherVar.value {
+                    return item.properties.remove${type}ValueWatcher(propertyPath, watcher: watcher)
+                }
+            }
+        }
+    }
+    return false
+}
 ```
 
 # LUA_VALUE_WATCHER(type, swift_type) #
@@ -104,6 +117,19 @@ public func listen${name}(itemPath: String, ${var_name}: String) -> Bool {
                 let listener = Lua${name}Listener(luaState: luaState, itemPath: itemPath)
                 listeners.addAnyVar(${var_name}, value: listener)
                 return item.${aspect}.add${name}Listener(${var_name}, listener: listener);
+            }
+        }
+    }
+    return false
+}
+
+public func unlisten${name}(itemPath: String, ${var_name}: String) -> Bool {
+    if let item: Item = registry.get(itemPath) {
+        if let listeners = item.lua${name}Listeners{
+            if let listenerVar: AnyVar<Lua${name}Listener> = listeners.remove(${var_name}) {
+                if let listener = listenerVar.value {
+                    return item.${aspect}.remove${name}Listener(${var_name}, listener: listener)
+                }
             }
         }
     }

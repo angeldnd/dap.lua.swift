@@ -59,46 +59,85 @@ import DapCore
     }
     
     //SILP: REGISTRY_LISTEN(Event, channelPath, channels)
-    public func listenEvent(itemPath: String, channelPath: String) -> Bool {                //__SILP__
-        if let item: Item = registry.get(itemPath) {                                        //__SILP__
-            if let listeners = item.luaEventListeners{                                      //__SILP__
-                if !listeners.has(channelPath) {                                            //__SILP__
-                    let listener = LuaEventListener(luaState: luaState, itemPath: itemPath) //__SILP__
-                    listeners.addAnyVar(channelPath, value: listener)                       //__SILP__
-                    return item.channels.addEventListener(channelPath, listener: listener); //__SILP__
-                }                                                                           //__SILP__
-            }                                                                               //__SILP__
-        }                                                                                   //__SILP__
-        return false                                                                        //__SILP__
-    }                                                                                       //__SILP__
+    public func listenEvent(itemPath: String, channelPath: String) -> Bool {                      //__SILP__
+        if let item: Item = registry.get(itemPath) {                                              //__SILP__
+            if let listeners = item.luaEventListeners{                                            //__SILP__
+                if !listeners.has(channelPath) {                                                  //__SILP__
+                    let listener = LuaEventListener(luaState: luaState, itemPath: itemPath)       //__SILP__
+                    listeners.addAnyVar(channelPath, value: listener)                             //__SILP__
+                    return item.channels.addEventListener(channelPath, listener: listener);       //__SILP__
+                }                                                                                 //__SILP__
+            }                                                                                     //__SILP__
+        }                                                                                         //__SILP__
+        return false                                                                              //__SILP__
+    }                                                                                             //__SILP__
+                                                                                                  //__SILP__
+    public func unlistenEvent(itemPath: String, channelPath: String) -> Bool {                    //__SILP__
+        if let item: Item = registry.get(itemPath) {                                              //__SILP__
+            if let listeners = item.luaEventListeners{                                            //__SILP__
+                if let listenerVar: AnyVar<LuaEventListener> = listeners.remove(channelPath) {    //__SILP__
+                    if let listener = listenerVar.value {                                         //__SILP__
+                        return item.channels.removeEventListener(channelPath, listener: listener) //__SILP__
+                    }                                                                             //__SILP__
+                }                                                                                 //__SILP__
+            }                                                                                     //__SILP__
+        }                                                                                         //__SILP__
+        return false                                                                              //__SILP__
+    }                                                                                             //__SILP__
     
     //SILP: REGISTRY_LISTEN(Request, handlerPath, handlers)
-    public func listenRequest(itemPath: String, handlerPath: String) -> Bool {                //__SILP__
-        if let item: Item = registry.get(itemPath) {                                          //__SILP__
-            if let listeners = item.luaRequestListeners{                                      //__SILP__
-                if !listeners.has(handlerPath) {                                              //__SILP__
-                    let listener = LuaRequestListener(luaState: luaState, itemPath: itemPath) //__SILP__
-                    listeners.addAnyVar(handlerPath, value: listener)                         //__SILP__
-                    return item.handlers.addRequestListener(handlerPath, listener: listener); //__SILP__
-                }                                                                             //__SILP__
-            }                                                                                 //__SILP__
-        }                                                                                     //__SILP__
-        return false                                                                          //__SILP__
-    }                                                                                         //__SILP__
+    public func listenRequest(itemPath: String, handlerPath: String) -> Bool {                      //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                //__SILP__
+            if let listeners = item.luaRequestListeners{                                            //__SILP__
+                if !listeners.has(handlerPath) {                                                    //__SILP__
+                    let listener = LuaRequestListener(luaState: luaState, itemPath: itemPath)       //__SILP__
+                    listeners.addAnyVar(handlerPath, value: listener)                               //__SILP__
+                    return item.handlers.addRequestListener(handlerPath, listener: listener);       //__SILP__
+                }                                                                                   //__SILP__
+            }                                                                                       //__SILP__
+        }                                                                                           //__SILP__
+        return false                                                                                //__SILP__
+    }                                                                                               //__SILP__
+                                                                                                    //__SILP__
+    public func unlistenRequest(itemPath: String, handlerPath: String) -> Bool {                    //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                //__SILP__
+            if let listeners = item.luaRequestListeners{                                            //__SILP__
+                if let listenerVar: AnyVar<LuaRequestListener> = listeners.remove(handlerPath) {    //__SILP__
+                    if let listener = listenerVar.value {                                           //__SILP__
+                        return item.handlers.removeRequestListener(handlerPath, listener: listener) //__SILP__
+                    }                                                                               //__SILP__
+                }                                                                                   //__SILP__
+            }                                                                                       //__SILP__
+        }                                                                                           //__SILP__
+        return false                                                                                //__SILP__
+    }                                                                                               //__SILP__
     
     //SILP: REGISTRY_LISTEN(Response, handlerPath, handlers)
-    public func listenResponse(itemPath: String, handlerPath: String) -> Bool {                //__SILP__
-        if let item: Item = registry.get(itemPath) {                                           //__SILP__
-            if let listeners = item.luaResponseListeners{                                      //__SILP__
-                if !listeners.has(handlerPath) {                                               //__SILP__
-                    let listener = LuaResponseListener(luaState: luaState, itemPath: itemPath) //__SILP__
-                    listeners.addAnyVar(handlerPath, value: listener)                          //__SILP__
-                    return item.handlers.addResponseListener(handlerPath, listener: listener); //__SILP__
-                }                                                                              //__SILP__
-            }                                                                                  //__SILP__
-        }                                                                                      //__SILP__
-        return false                                                                           //__SILP__
-    }                                                                                          //__SILP__
+    public func listenResponse(itemPath: String, handlerPath: String) -> Bool {                      //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                 //__SILP__
+            if let listeners = item.luaResponseListeners{                                            //__SILP__
+                if !listeners.has(handlerPath) {                                                     //__SILP__
+                    let listener = LuaResponseListener(luaState: luaState, itemPath: itemPath)       //__SILP__
+                    listeners.addAnyVar(handlerPath, value: listener)                                //__SILP__
+                    return item.handlers.addResponseListener(handlerPath, listener: listener);       //__SILP__
+                }                                                                                    //__SILP__
+            }                                                                                        //__SILP__
+        }                                                                                            //__SILP__
+        return false                                                                                 //__SILP__
+    }                                                                                                //__SILP__
+                                                                                                     //__SILP__
+    public func unlistenResponse(itemPath: String, handlerPath: String) -> Bool {                    //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                 //__SILP__
+            if let listeners = item.luaResponseListeners{                                            //__SILP__
+                if let listenerVar: AnyVar<LuaResponseListener> = listeners.remove(handlerPath) {    //__SILP__
+                    if let listener = listenerVar.value {                                            //__SILP__
+                        return item.handlers.removeResponseListener(handlerPath, listener: listener) //__SILP__
+                    }                                                                                //__SILP__
+                }                                                                                    //__SILP__
+            }                                                                                        //__SILP__
+        }                                                                                            //__SILP__
+        return false                                                                                 //__SILP__
+    }                                                                                                //__SILP__
 
     //SILP: REGISTRY_PROPERTY(Bool, Bool)
     public func addBool(itemPath: String, propertyPath: String, value: Bool) -> Bool {                                    //__SILP__
@@ -151,6 +190,19 @@ import DapCore
                     let watcher = LuaBoolValueWatcher(luaState: luaState, itemPath: itemPath, defaultValue: defaultValue) //__SILP__
                     watchers.addAnyVar(propertyPath, value: watcher)                                                      //__SILP__
                     return item.properties.addBoolValueWatcher(propertyPath, watcher: watcher)                            //__SILP__
+                }                                                                                                         //__SILP__
+            }                                                                                                             //__SILP__
+        }                                                                                                                 //__SILP__
+        return false                                                                                                      //__SILP__
+    }                                                                                                                     //__SILP__
+                                                                                                                          //__SILP__
+    public func unwatchBool(itemPath: String, propertyPath: String, defaultValue: Bool) -> Bool {                         //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                      //__SILP__
+            if let watchers = item.luaPropertyWatchers {                                                                  //__SILP__
+                if let watcherVar: AnyVar<LuaBoolValueWatcher> = watchers.remove(propertyPath) {                          //__SILP__
+                    if let watcher = watcherVar.value {                                                                   //__SILP__
+                        return item.properties.removeBoolValueWatcher(propertyPath, watcher: watcher)                     //__SILP__
+                    }                                                                                                     //__SILP__
                 }                                                                                                         //__SILP__
             }                                                                                                             //__SILP__
         }                                                                                                                 //__SILP__
@@ -212,6 +264,19 @@ import DapCore
         }                                                                                                                //__SILP__
         return false                                                                                                     //__SILP__
     }                                                                                                                    //__SILP__
+                                                                                                                         //__SILP__
+    public func unwatchInt(itemPath: String, propertyPath: String, defaultValue: Int32) -> Bool {                        //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                     //__SILP__
+            if let watchers = item.luaPropertyWatchers {                                                                 //__SILP__
+                if let watcherVar: AnyVar<LuaIntValueWatcher> = watchers.remove(propertyPath) {                          //__SILP__
+                    if let watcher = watcherVar.value {                                                                  //__SILP__
+                        return item.properties.removeIntValueWatcher(propertyPath, watcher: watcher)                     //__SILP__
+                    }                                                                                                    //__SILP__
+                }                                                                                                        //__SILP__
+            }                                                                                                            //__SILP__
+        }                                                                                                                //__SILP__
+        return false                                                                                                     //__SILP__
+    }                                                                                                                    //__SILP__
     //SILP: REGISTRY_PROPERTY(Long, Int64)
     public func addLong(itemPath: String, propertyPath: String, value: Int64) -> Bool {                                   //__SILP__
         if let item: Item = registry.get(itemPath) {                                                                      //__SILP__
@@ -263,6 +328,19 @@ import DapCore
                     let watcher = LuaLongValueWatcher(luaState: luaState, itemPath: itemPath, defaultValue: defaultValue) //__SILP__
                     watchers.addAnyVar(propertyPath, value: watcher)                                                      //__SILP__
                     return item.properties.addLongValueWatcher(propertyPath, watcher: watcher)                            //__SILP__
+                }                                                                                                         //__SILP__
+            }                                                                                                             //__SILP__
+        }                                                                                                                 //__SILP__
+        return false                                                                                                      //__SILP__
+    }                                                                                                                     //__SILP__
+                                                                                                                          //__SILP__
+    public func unwatchLong(itemPath: String, propertyPath: String, defaultValue: Int64) -> Bool {                        //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                      //__SILP__
+            if let watchers = item.luaPropertyWatchers {                                                                  //__SILP__
+                if let watcherVar: AnyVar<LuaLongValueWatcher> = watchers.remove(propertyPath) {                          //__SILP__
+                    if let watcher = watcherVar.value {                                                                   //__SILP__
+                        return item.properties.removeLongValueWatcher(propertyPath, watcher: watcher)                     //__SILP__
+                    }                                                                                                     //__SILP__
                 }                                                                                                         //__SILP__
             }                                                                                                             //__SILP__
         }                                                                                                                 //__SILP__
@@ -324,6 +402,19 @@ import DapCore
         }                                                                                                                  //__SILP__
         return false                                                                                                       //__SILP__
     }                                                                                                                      //__SILP__
+                                                                                                                           //__SILP__
+    public func unwatchFloat(itemPath: String, propertyPath: String, defaultValue: Float) -> Bool {                        //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                       //__SILP__
+            if let watchers = item.luaPropertyWatchers {                                                                   //__SILP__
+                if let watcherVar: AnyVar<LuaFloatValueWatcher> = watchers.remove(propertyPath) {                          //__SILP__
+                    if let watcher = watcherVar.value {                                                                    //__SILP__
+                        return item.properties.removeFloatValueWatcher(propertyPath, watcher: watcher)                     //__SILP__
+                    }                                                                                                      //__SILP__
+                }                                                                                                          //__SILP__
+            }                                                                                                              //__SILP__
+        }                                                                                                                  //__SILP__
+        return false                                                                                                       //__SILP__
+    }                                                                                                                      //__SILP__
     //SILP: REGISTRY_PROPERTY(Double, Double)
     public func addDouble(itemPath: String, propertyPath: String, value: Double) -> Bool {                                  //__SILP__
         if let item: Item = registry.get(itemPath) {                                                                        //__SILP__
@@ -380,6 +471,19 @@ import DapCore
         }                                                                                                                   //__SILP__
         return false                                                                                                        //__SILP__
     }                                                                                                                       //__SILP__
+                                                                                                                            //__SILP__
+    public func unwatchDouble(itemPath: String, propertyPath: String, defaultValue: Double) -> Bool {                       //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                        //__SILP__
+            if let watchers = item.luaPropertyWatchers {                                                                    //__SILP__
+                if let watcherVar: AnyVar<LuaDoubleValueWatcher> = watchers.remove(propertyPath) {                          //__SILP__
+                    if let watcher = watcherVar.value {                                                                     //__SILP__
+                        return item.properties.removeDoubleValueWatcher(propertyPath, watcher: watcher)                     //__SILP__
+                    }                                                                                                       //__SILP__
+                }                                                                                                           //__SILP__
+            }                                                                                                               //__SILP__
+        }                                                                                                                   //__SILP__
+        return false                                                                                                        //__SILP__
+    }                                                                                                                       //__SILP__
     //SILP: REGISTRY_PROPERTY(String, String)
     public func addString(itemPath: String, propertyPath: String, value: String) -> Bool {                                  //__SILP__
         if let item: Item = registry.get(itemPath) {                                                                        //__SILP__
@@ -431,6 +535,19 @@ import DapCore
                     let watcher = LuaStringValueWatcher(luaState: luaState, itemPath: itemPath, defaultValue: defaultValue) //__SILP__
                     watchers.addAnyVar(propertyPath, value: watcher)                                                        //__SILP__
                     return item.properties.addStringValueWatcher(propertyPath, watcher: watcher)                            //__SILP__
+                }                                                                                                           //__SILP__
+            }                                                                                                               //__SILP__
+        }                                                                                                                   //__SILP__
+        return false                                                                                                        //__SILP__
+    }                                                                                                                       //__SILP__
+                                                                                                                            //__SILP__
+    public func unwatchString(itemPath: String, propertyPath: String, defaultValue: String) -> Bool {                       //__SILP__
+        if let item: Item = registry.get(itemPath) {                                                                        //__SILP__
+            if let watchers = item.luaPropertyWatchers {                                                                    //__SILP__
+                if let watcherVar: AnyVar<LuaStringValueWatcher> = watchers.remove(propertyPath) {                          //__SILP__
+                    if let watcher = watcherVar.value {                                                                     //__SILP__
+                        return item.properties.removeStringValueWatcher(propertyPath, watcher: watcher)                     //__SILP__
+                    }                                                                                                       //__SILP__
                 }                                                                                                           //__SILP__
             }                                                                                                               //__SILP__
         }                                                                                                                   //__SILP__
