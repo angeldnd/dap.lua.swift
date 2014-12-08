@@ -1108,7 +1108,7 @@ static int setLuaPath(lua_State* L, const char* path) {
     return 0; // all done!
 }
 
-static const char *daplib_name = "dap";
+static const char *daplib_name = "_dap";
 static const luaL_Reg daplib[] =
 {
     //Item functions
