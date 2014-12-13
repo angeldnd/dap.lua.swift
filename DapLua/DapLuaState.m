@@ -49,72 +49,6 @@ int luaopen_lpeg(lua_State *L);
     }
 }
 
-//SILP: LUA_PRORERTY_CHANGED(bool, bool, boolean, Bool)
-- (void)onBoolChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath //__SILP__
-                lastValue: (bool)lastValue value: (bool)value {                    //__SILP__
-    lua_call_function_begin(luaState, @"_dap_on_bool_changed");                    //__SILP__
-    lua_push_nsstring(luaState, itemPath);                                         //__SILP__
-    lua_push_nsstring(luaState, propertyPath);                                     //__SILP__
-    lua_pushboolean(luaState, lastValue);                                          //__SILP__
-    lua_pushboolean(luaState, value);                                              //__SILP__
-    lua_call_function_end(luaState, 4);                                            //__SILP__
-}                                                                                  //__SILP__
-
-//SILP: LUA_PRORERTY_CHANGED(int, int, number, Int)
-- (void)onIntChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath //__SILP__
-                lastValue: (int)lastValue value: (int)value {                     //__SILP__
-    lua_call_function_begin(luaState, @"_dap_on_int_changed");                    //__SILP__
-    lua_push_nsstring(luaState, itemPath);                                        //__SILP__
-    lua_push_nsstring(luaState, propertyPath);                                    //__SILP__
-    lua_pushnumber(luaState, lastValue);                                          //__SILP__
-    lua_pushnumber(luaState, value);                                              //__SILP__
-    lua_call_function_end(luaState, 4);                                           //__SILP__
-}                                                                                 //__SILP__
-
-//SILP: LUA_PRORERTY_CHANGED(long, long long, number, Long)
-- (void)onLongChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath //__SILP__
-                lastValue: (long long)lastValue value: (long long)value {          //__SILP__
-    lua_call_function_begin(luaState, @"_dap_on_long_changed");                    //__SILP__
-    lua_push_nsstring(luaState, itemPath);                                         //__SILP__
-    lua_push_nsstring(luaState, propertyPath);                                     //__SILP__
-    lua_pushnumber(luaState, lastValue);                                           //__SILP__
-    lua_pushnumber(luaState, value);                                               //__SILP__
-    lua_call_function_end(luaState, 4);                                            //__SILP__
-}                                                                                  //__SILP__
-
-//SILP: LUA_PRORERTY_CHANGED(float, float, number, Float)
-- (void)onFloatChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath //__SILP__
-                lastValue: (float)lastValue value: (float)value {                   //__SILP__
-    lua_call_function_begin(luaState, @"_dap_on_float_changed");                    //__SILP__
-    lua_push_nsstring(luaState, itemPath);                                          //__SILP__
-    lua_push_nsstring(luaState, propertyPath);                                      //__SILP__
-    lua_pushnumber(luaState, lastValue);                                            //__SILP__
-    lua_pushnumber(luaState, value);                                                //__SILP__
-    lua_call_function_end(luaState, 4);                                             //__SILP__
-}                                                                                   //__SILP__
-
-//SILP: LUA_PRORERTY_CHANGED(double, double, number, Double)
-- (void)onDoubleChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath //__SILP__
-                lastValue: (double)lastValue value: (double)value {                  //__SILP__
-    lua_call_function_begin(luaState, @"_dap_on_double_changed");                    //__SILP__
-    lua_push_nsstring(luaState, itemPath);                                           //__SILP__
-    lua_push_nsstring(luaState, propertyPath);                                       //__SILP__
-    lua_pushnumber(luaState, lastValue);                                             //__SILP__
-    lua_pushnumber(luaState, value);                                                 //__SILP__
-    lua_call_function_end(luaState, 4);                                              //__SILP__
-}                                                                                    //__SILP__
-
-//SILP: LUA_PRORERTY_CHANGED(string, NSString *, _nsstring, String)
-- (void)onStringChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath //__SILP__
-                lastValue: (NSString *)lastValue value: (NSString *)value {          //__SILP__
-    lua_call_function_begin(luaState, @"_dap_on_string_changed");                    //__SILP__
-    lua_push_nsstring(luaState, itemPath);                                           //__SILP__
-    lua_push_nsstring(luaState, propertyPath);                                       //__SILP__
-    lua_push_nsstring(luaState, lastValue);                                          //__SILP__
-    lua_push_nsstring(luaState, value);                                              //__SILP__
-    lua_call_function_end(luaState, 4);                                              //__SILP__
-}                                                                                    //__SILP__
-
 - (void)onEvent: (NSString *)itemPath channelPath: (NSString *)channelPath
             evt: (Data *) evt {
     lua_call_function_begin(luaState, @"_dap_on_event");
@@ -295,6 +229,72 @@ static Data* lua_to_data(lua_State *L) {
     return data;
 }
 
+//SILP: LUA_PRORERTY_CHANGED(bool, bool, boolean, Bool)
+- (void)onBoolChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath //__SILP__
+                lastValue: (bool)lastValue value: (bool)value {                    //__SILP__
+    lua_call_function_begin(luaState, @"_dap_on_bool_changed");                    //__SILP__
+    lua_push_nsstring(luaState, itemPath);                                         //__SILP__
+    lua_push_nsstring(luaState, propertyPath);                                     //__SILP__
+    lua_pushboolean(luaState, lastValue);                                          //__SILP__
+    lua_pushboolean(luaState, value);                                              //__SILP__
+    lua_call_function_end(luaState, 4);                                            //__SILP__
+}                                                                                  //__SILP__
+
+//SILP: LUA_PRORERTY_CHANGED(int, int, number, Int)
+- (void)onIntChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath //__SILP__
+                lastValue: (int)lastValue value: (int)value {                     //__SILP__
+    lua_call_function_begin(luaState, @"_dap_on_int_changed");                    //__SILP__
+    lua_push_nsstring(luaState, itemPath);                                        //__SILP__
+    lua_push_nsstring(luaState, propertyPath);                                    //__SILP__
+    lua_pushnumber(luaState, lastValue);                                          //__SILP__
+    lua_pushnumber(luaState, value);                                              //__SILP__
+    lua_call_function_end(luaState, 4);                                           //__SILP__
+}                                                                                 //__SILP__
+
+//SILP: LUA_PRORERTY_CHANGED(long, long long, number, Long)
+- (void)onLongChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath //__SILP__
+                lastValue: (long long)lastValue value: (long long)value {          //__SILP__
+    lua_call_function_begin(luaState, @"_dap_on_long_changed");                    //__SILP__
+    lua_push_nsstring(luaState, itemPath);                                         //__SILP__
+    lua_push_nsstring(luaState, propertyPath);                                     //__SILP__
+    lua_pushnumber(luaState, lastValue);                                           //__SILP__
+    lua_pushnumber(luaState, value);                                               //__SILP__
+    lua_call_function_end(luaState, 4);                                            //__SILP__
+}                                                                                  //__SILP__
+
+//SILP: LUA_PRORERTY_CHANGED(float, float, number, Float)
+- (void)onFloatChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath //__SILP__
+                lastValue: (float)lastValue value: (float)value {                   //__SILP__
+    lua_call_function_begin(luaState, @"_dap_on_float_changed");                    //__SILP__
+    lua_push_nsstring(luaState, itemPath);                                          //__SILP__
+    lua_push_nsstring(luaState, propertyPath);                                      //__SILP__
+    lua_pushnumber(luaState, lastValue);                                            //__SILP__
+    lua_pushnumber(luaState, value);                                                //__SILP__
+    lua_call_function_end(luaState, 4);                                             //__SILP__
+}                                                                                   //__SILP__
+
+//SILP: LUA_PRORERTY_CHANGED(double, double, number, Double)
+- (void)onDoubleChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath //__SILP__
+                lastValue: (double)lastValue value: (double)value {                  //__SILP__
+    lua_call_function_begin(luaState, @"_dap_on_double_changed");                    //__SILP__
+    lua_push_nsstring(luaState, itemPath);                                           //__SILP__
+    lua_push_nsstring(luaState, propertyPath);                                       //__SILP__
+    lua_pushnumber(luaState, lastValue);                                             //__SILP__
+    lua_pushnumber(luaState, value);                                                 //__SILP__
+    lua_call_function_end(luaState, 4);                                              //__SILP__
+}                                                                                    //__SILP__
+
+//SILP: LUA_PRORERTY_CHANGED(string, NSString *, _nsstring, String)
+- (void)onStringChanged: (NSString *)itemPath propertyPath: (NSString *)propertyPath //__SILP__
+                lastValue: (NSString *)lastValue value: (NSString *)value {          //__SILP__
+    lua_call_function_begin(luaState, @"_dap_on_string_changed");                    //__SILP__
+    lua_push_nsstring(luaState, itemPath);                                           //__SILP__
+    lua_push_nsstring(luaState, propertyPath);                                       //__SILP__
+    lua_push_nsstring(luaState, lastValue);                                          //__SILP__
+    lua_push_nsstring(luaState, value);                                              //__SILP__
+    lua_call_function_end(luaState, 4);                                              //__SILP__
+}                                                                                    //__SILP__
+
 //SILP: LUA_CHANNEL_BEGIN(fire_event, channel)
 static int dap_fire_event(lua_State *L) {                                                                  //__SILP__
     luaL_argcheck(L, lua_isstring(L, 1), 1, "item_path should be string!");                                //__SILP__
@@ -302,7 +302,7 @@ static int dap_fire_event(lua_State *L) {                                       
                                                                                                            //__SILP__
     NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];    //__SILP__
     NSString *channelPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
-    
+                                                                                                           //__SILP__
     luaL_argcheck(L, lua_istable(L, 3), 3, "data should be table!");
     Data *evt = lua_to_data(L);
     bool result = [RegistryAPI.Global fireEvent: itemPath channelPath: channelPath evt:evt];
@@ -407,6 +407,7 @@ static int dap_add_channel(lua_State *L) {                                      
                                                                                                            //__SILP__
     NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];    //__SILP__
     NSString *channelPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+                                                                                                           //__SILP__
     bool result = [RegistryAPI.Global addChannel: itemPath channelPath: channelPath];
     lua_pushboolean(L, result);
     return 1;
@@ -419,6 +420,7 @@ static int dap_remove_channel(lua_State *L) {                                   
                                                                                                            //__SILP__
     NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];    //__SILP__
     NSString *channelPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+                                                                                                           //__SILP__
     bool result = [RegistryAPI.Global removeChannel: itemPath channelPath: channelPath];
     lua_pushboolean(L, result);
     return 1;
@@ -431,7 +433,7 @@ static int dap_handle_request(lua_State *L) {                                   
                                                                                                            //__SILP__
     NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];    //__SILP__
     NSString *handlerPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
-    
+                                                                                                           //__SILP__
     luaL_argcheck(L, lua_istable(L, 3), 3, "data should be table!");
     Data *req = lua_to_data(L);
     Data *result = [RegistryAPI.Global handleRequest: itemPath handlerPath: handlerPath req:req];
@@ -492,6 +494,7 @@ static int dap_add_handler(lua_State *L) {                                      
                                                                                                            //__SILP__
     NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];    //__SILP__
     NSString *handlerPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+                                                                                                           //__SILP__
     bool result = [RegistryAPI.Global addHandler: itemPath handlerPath: handlerPath];
     lua_pushboolean(L, result);
     return 1;
@@ -504,6 +507,7 @@ static int dap_remove_handler(lua_State *L) {                                   
                                                                                                            //__SILP__
     NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];    //__SILP__
     NSString *handlerPath = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding]; //__SILP__
+                                                                                                           //__SILP__
     bool result = [RegistryAPI.Global removeHandler: itemPath handlerPath: handlerPath];
     lua_pushboolean(L, result);
     return 1;

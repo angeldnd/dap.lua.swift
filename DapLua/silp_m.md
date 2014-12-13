@@ -14,6 +14,7 @@ static int dap_${name}(lua_State *L) {
 
     NSString *itemPath = [NSString stringWithCString:lua_tostring(L, 1) encoding:NSUTF8StringEncoding];
     NSString *${var_name}Path = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding];
+
 ```
 
 # LUA_LISTEN(name, swift_name, var_name) #
