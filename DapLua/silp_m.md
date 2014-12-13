@@ -41,11 +41,11 @@ static int dap_unlisten_${name}(lua_State *L) {
 }
 ```
 
-# LUA_PRORERTY_CHANGED(c_type, lua_type, type) #
+# LUA_PRORERTY_CHANGED(type, c_type, lua_type, swift_type) #
 ```
-- (void)on${type}Changed: (NSString *)itemPath propertyPath: (NSString *)propertyPath
+- (void)on${swift_type}Changed: (NSString *)itemPath propertyPath: (NSString *)propertyPath
                 lastValue: (${c_type})lastValue value: (${c_type})value {
-    lua_call_function_begin(luaState, @"_on${type}Changed");
+    lua_call_function_begin(luaState, @"_dap_on_${type}_changed");
     lua_push_nsstring(luaState, itemPath);
     lua_push_nsstring(luaState, propertyPath);
     lua_push${lua_type}(luaState, lastValue);

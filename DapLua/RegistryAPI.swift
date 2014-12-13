@@ -24,6 +24,21 @@ import DapCore
         self.luaState = DapLuaState.sharedState()
     }
     
+    public func isItem(itemPath: String, itemType: String) -> Bool {
+        if let item: Item = registry.get(itemPath) {
+            if item.type == itemType {
+                return true
+            } else if itemType == Item.Consts.TypeItem {
+                /*
+                 * If the caller doesn't really care about the type, it
+                 * can use "Item" as the itemType parameter
+                 */
+                return true
+            }
+        }
+        return false
+    }
+    
     public func addItem(itemPath: String, itemType: String) -> Bool {
         return registry.addItem(itemPath, type: itemType) != nil
     }
