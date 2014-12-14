@@ -1,5 +1,5 @@
 //
-//  DapLuaBridge.h
+//  DapLuaState.h
 //  DapLua
 //
 //  Created by YJ Park on 14/11/10.
